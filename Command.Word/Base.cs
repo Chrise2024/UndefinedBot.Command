@@ -88,7 +88,7 @@ namespace Command.Hitokoto
                         await _undefinedApi.Api.SendGroupMsg(
                                 args.GroupId,
                                 _undefinedApi.GetMessageBuilder()
-                                    .Text(await _undefinedApi.Request.Get("https://api.vvhan.com/api/text/dog.")).Build()
+                                    .Text(await _undefinedApi.Request.Get("https://api.vvhan.com/api/text/dog")).Build()
                             );
 
                     }
