@@ -5,14 +5,14 @@ VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.AnswerBook", "Command.AnswerBook\Command.AnswerBook.csproj", "{165F2609-B2F9-4F8B-A6C0-42D1257A7856}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Information", "Command.Histoday\Command.Information.csproj", "{6BED58D1-F081-4FCA-865A-B1BB5D69BFF4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Information", "Command.Information\Command.Information.csproj", "{6BED58D1-F081-4FCA-865A-B1BB5D69BFF4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{7D766E7B-1844-41E4-B185-54F6110D7477}"
 	ProjectSection(SolutionItems) = preProject
 		TemplateCommand.txt = TemplateCommand.txt
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Word", "Command.Hitokoto\Command.Word.csproj", "{E579CA85-0612-46CF-A1CB-02F0F14202C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Word", "Command.Word\Command.Word.csproj", "{E579CA85-0612-46CF-A1CB-02F0F14202C3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Homo", "Command.Homo\Command.Homo.csproj", "{91497031-C28C-497A-B778-877DD73EAE02}"
 EndProject

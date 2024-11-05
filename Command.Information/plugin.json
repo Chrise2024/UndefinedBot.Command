@@ -1,5 +1,5 @@
 ﻿{
-  "name": "Base",
+  "name": "Information",
   "description": "资讯插件",
   "entry_file": "Command.Information.dll",
   "entry_point": "Base"
