@@ -1,0 +1,6 @@
+﻿{
+  "name": "Message Raw",
+  "description": "消息原始内容",
+  "entry_file": "Command.Raw.dll",
+  "entry_point": "RawCommand"
+}

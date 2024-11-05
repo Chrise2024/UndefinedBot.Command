@@ -1,0 +1,6 @@
+﻿{
+  "name": "Queto Gen",
+  "description": "入典生成器",
+  "entry_file": "Command.Queto.dll",
+  "entry_point": "QuetoCommand"
+}

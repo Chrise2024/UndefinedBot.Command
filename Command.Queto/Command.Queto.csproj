@@ -4,20 +4,27 @@
     <TargetFramework>net8.0-windows8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <SupportedOSPlatformVersion>8.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="plugin.json" />
+    <None Remove="QSplash.png" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="plugin.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="QSplash.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Win32.SystemEvents" Version="9.0.0-rc.2.24473.5" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="SkiaSharp" Version="2.88.8" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="2.88.8" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.0-rc.2.24474.1" />
     <PackageReference Include="UndefinedBot.Core" Version="1.1.0" />
   </ItemGroup>

@@ -1,35 +1,34 @@
 ﻿using UndefinedBot.Core;
 using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
+using Newtonsoft.Json;
 
 namespace Command.AnswerBook
 {
-    public class AnswerBookCommand : IBaseCommand
+    public class AnswerBookCommand
     {
-        public UndefinedAPI CommandApi { get; private set; } = new("Answerbook", "answerbook");
-        public string CommandName { get; private set; } = "answerbook";
-        public async Task Execute(ArgSchematics args)
+        private readonly UndefinedAPI _undefinedApi;
+        private readonly string _pluginName;
+        public AnswerBookCommand(string pluginName)
         {
-            await CommandApi.Api.SendGroupMsg(
-                            args.GroupId,
-                            CommandApi.GetMessageBuilder()
-                                .Reply(args.MsgId)
-                                .Text(GetAnswer()).Build()
-                        );
-        }
-        public async Task Handle(ArgSchematics args)
-        {
-            if (args.Command.Equals(CommandName))
-            {
-                CommandApi.Logger.Info("Command Triggered");
-                await Execute(args);
-                CommandApi.Logger.Info("Command Completed");
-            }
-        }
-        public void Init()
-        {
-            CommandApi.CommandEvent.OnCommand += Handle;
-            CommandApi.Logger.Info("Command Loaded");
+            _undefinedApi = new(pluginName);
+            _pluginName = pluginName;
+            _undefinedApi.RegisterCommand("answerbook")
+                .Alias(["ab", "answer"])
+                .Description("{0}answerbook - 答案之书\n使用方法：{0}answerbook")
+                .ShortDescription("{0}answerbook - 答案之书")
+                .Example("{0}answerbook")
+                .Action(async (ArgSchematics args) =>
+                {
+
+                    await _undefinedApi.Api.SendGroupMsg(
+                                    args.GroupId,
+                                    _undefinedApi.GetMessageBuilder()
+                                        .Reply(args.MsgId)
+                                        .Text(GetAnswer()).Build()
+                                );
+                });
+            _undefinedApi.SubmitCommand();
         }
         private static readonly Random s_randomRoot = new();
         public static string GetAnswer()
