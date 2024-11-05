@@ -5,18 +5,16 @@ VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.AnswerBook", "Command.AnswerBook\Command.AnswerBook.csproj", "{165F2609-B2F9-4F8B-A6C0-42D1257A7856}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Histoday", "Command.Histoday\Command.Histoday.csproj", "{6BED58D1-F081-4FCA-865A-B1BB5D69BFF4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Information", "Command.Histoday\Command.Information.csproj", "{6BED58D1-F081-4FCA-865A-B1BB5D69BFF4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{7D766E7B-1844-41E4-B185-54F6110D7477}"
 	ProjectSection(SolutionItems) = preProject
 		TemplateCommand.txt = TemplateCommand.txt
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Hitokoto", "Command.Hitokoto\Command.Hitokoto.csproj", "{E579CA85-0612-46CF-A1CB-02F0F14202C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Word", "Command.Hitokoto\Command.Word.csproj", "{E579CA85-0612-46CF-A1CB-02F0F14202C3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Homo", "Command.Homo\Command.Homo.csproj", "{91497031-C28C-497A-B778-877DD73EAE02}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Template", "Command.Template\Command.Template.csproj", "{7EBD5ABF-96D0-4C83-893D-C20D9475F051}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Mix", "Command.Mix\Command.Mix.csproj", "{A8876F34-E933-4D75-9345-B0171B4EC304}"
 EndProject
@@ -24,9 +22,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Queto", "Command.Qu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Random", "Command.Random\Command.Random.csproj", "{0D5306BA-6A29-4B2D-B663-55CAB6A7CCC6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Command.Raw", "Command.Raw\Command.Raw.csproj", "{BFAE8AE6-1696-49C3-8C1F-0D9B9EEB5252}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Raw", "Command.Raw\Command.Raw.csproj", "{BFAE8AE6-1696-49C3-8C1F-0D9B9EEB5252}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Command.Symmet", "Command.Symmet\Command.Symmet.csproj", "{07FFCEB8-AD8C-488B-8C4A-9A618E238A5C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Symmet", "Command.Symmet\Command.Symmet.csproj", "{07FFCEB8-AD8C-488B-8C4A-9A618E238A5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,10 +48,6 @@ Global
 		{91497031-C28C-497A-B778-877DD73EAE02}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91497031-C28C-497A-B778-877DD73EAE02}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91497031-C28C-497A-B778-877DD73EAE02}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7EBD5ABF-96D0-4C83-893D-C20D9475F051}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7EBD5ABF-96D0-4C83-893D-C20D9475F051}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7EBD5ABF-96D0-4C83-893D-C20D9475F051}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7EBD5ABF-96D0-4C83-893D-C20D9475F051}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A8876F34-E933-4D75-9345-B0171B4EC304}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A8876F34-E933-4D75-9345-B0171B4EC304}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A8876F34-E933-4D75-9345-B0171B4EC304}.Release|Any CPU.ActiveCfg = Release|Any CPU

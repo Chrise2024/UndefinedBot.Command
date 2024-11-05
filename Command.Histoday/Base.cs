@@ -3,14 +3,15 @@ using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 using System.Drawing;
 using System.Globalization;
+using Newtonsoft.Json.Linq;
 
 namespace Command.Histoday
 {
-    public class HistodayCommand
+    public class Base
     {
         private readonly UndefinedAPI _undefinedApi;
         private readonly string _pluginName;
-        public HistodayCommand(string pluginName)
+        public Base(string pluginName)
         {
             _undefinedApi = new(pluginName);
             _pluginName = pluginName;
@@ -27,6 +28,28 @@ namespace Command.Histoday
                                         .Image(ImageCachePath, ImageSendType.LocalFile, ImageSubType.Normal).Build()
                                 );
                     SafeDeleteFile(ImageCachePath);
+                });
+            _undefinedApi.RegisterCommand("moyu")
+                .Alias(["摸鱼","摸鱼日记"])
+                .Description("{0}moyu - 摸鱼日记\n使用方法：{0}moyu")
+                .ShortDescription("{0}moyu - 摸鱼日记")
+                .Example("{0}moyu")
+                .Action(async (ArgSchematics args) =>
+                {
+                    try
+                    {
+                        JObject Resp = JObject.Parse(await _undefinedApi.Request.Get("https://api.vvhan.com/api/moyu?type=json"));
+                        string? ImUrl = Resp.Value<string>("url");
+                        if (ImUrl != null)
+                        {
+                            await _undefinedApi.Api.SendGroupMsg(
+                                            args.GroupId,
+                                            _undefinedApi.GetMessageBuilder()
+                                                .Image(ImUrl, ImageSendType.Url, ImageSubType.Normal).Build()
+                                        );
+                        }
+                    }
+                    catch { }
                 });
             _undefinedApi.SubmitCommand();
         }

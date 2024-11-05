@@ -1,6 +1,6 @@
 ﻿{
-  "name": "Histoday",
-  "description": "历史上的今天",
-  "entry_file": "Command.Histoday.dll",
-  "entry_point": "HistodayCommand"
+  "name": "Base",
+  "description": "资讯插件",
+  "entry_file": "Command.Information.dll",
+  "entry_point": "Base"
 }

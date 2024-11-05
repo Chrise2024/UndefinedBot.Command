@@ -1,6 +1,6 @@
 ﻿{
-  "name": "Hitokoto",
-  "description": "随机一言",
-  "entry_point": "HitoCommand",
-  "entry_file": "Command.Hitokoto.dll"
+  "name": "Word",
+  "description": "趣味内容",
+  "entry_point": "Base",
+  "entry_file": "Command.Word.dll"
 }
