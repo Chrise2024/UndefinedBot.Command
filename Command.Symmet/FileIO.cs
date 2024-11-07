@@ -1,10 +1,9 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Command.Symmet
 {
-    internal abstract class FileIO
+    abstract internal class FileIo
     {
         public static void EnsurePath(string? tPath)
         {
@@ -15,11 +14,6 @@ namespace Command.Symmet
             if (!Path.Exists(tPath))
             {
                 Directory.CreateDirectory(tPath);
-                return;
-            }
-            else
-            {
-                return;
             }
         }
         public static void EnsureFile(string tPath, string initData = "")
@@ -28,19 +22,7 @@ namespace Command.Symmet
             {
                 EnsurePath(Path.GetDirectoryName(tPath));
                 File.Create(tPath).Close();
-                if (initData.Length != 0)
-                {
-                    WriteFile(tPath, initData);
-                }
-                else
-                {
-                    WriteFile(tPath, string.Empty);
-                }
-                return;
-            }
-            else
-            {
-                return;
+                WriteFile(tPath, initData.Length != 0 ? initData : string.Empty);
             }
         }
         public static void SafeDeleteFile(string tPath)
@@ -52,7 +34,10 @@ namespace Command.Symmet
                     File.Delete(tPath);
                 }
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
         }
         public static void SafeDeletePath(string tPath)
         {
@@ -63,7 +48,10 @@ namespace Command.Symmet
                     Directory.Delete(tPath);
                 }
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
         }
         public static string ReadFile(string tPath)
         {
@@ -80,54 +68,43 @@ namespace Command.Symmet
         {
             EnsureFile(tPath, content);
             File.WriteAllText(tPath, content);
-            return;
         }
-        public static JObject ReadAsJSON(string tPath)
+        public static JObject ReadAsJson(string tPath)
         {
-            string Content = ReadFile(tPath);
-            if (Content.Length != 0)
+            string content = ReadFile(tPath);
+            if (content.Length != 0)
             {
-                return JObject.Parse(Content);
+                return JObject.Parse(content);
             }
             else
             {
                 return [];
             }
         }
-        public static T ReadAsJSON<T>(string tPath)
+        public static T ReadAsJson<T>(string tPath)
         {
-            string Content = ReadFile(tPath);
-            if (Content.Length != 0)
-            {
-                return JObject.Parse(Content).ToObject<T>();
-            }
-            else
-            {
-                return new JObject().ToObject<T>();
-            }
+            string content = ReadFile(tPath);
+            return content.Length != 0 ? JsonConvert.DeserializeObject<T>(content) : new JObject().ToObject<T>();
         }
         public static JArray ReadAsJArray(string tPath)
         {
 
             return JArray.Parse(ReadFile(tPath));
         }
-        public static void WriteAsJSON<T>(string tPath, T Content)
+        public static void WriteAsJson<T>(string tPath, T content)
         {
             EnsureFile(tPath);
-            WriteFile(tPath, JsonConvert.SerializeObject(Content, Formatting.Indented));
-            return;
+            WriteFile(tPath, JsonConvert.SerializeObject(content, Formatting.Indented));
         }
-        public static void WriteAsJSON(string tPath, JObject Content)
+        public static void WriteAsJson(string tPath, JObject content)
         {
             EnsureFile(tPath);
-            WriteFile(tPath, JsonConvert.SerializeObject(Content, Formatting.Indented));
-            return;
+            WriteFile(tPath, JsonConvert.SerializeObject(content, Formatting.Indented));
         }
-        public static void WriteAsJArray(string tPath, JArray Content)
+        public static void WriteAsJArray(string tPath, JArray content)
         {
             EnsureFile(tPath);
-            WriteFile(tPath, JsonConvert.SerializeObject(Content, Formatting.Indented));
-            return;
+            WriteFile(tPath, JsonConvert.SerializeObject(content, Formatting.Indented));
         }
     }
 }

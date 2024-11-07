@@ -1,18 +1,10 @@
 ﻿using System.Globalization;
-using System.Drawing;
-using System.Reflection;
-using System.Drawing.Imaging;
 using System.Text.RegularExpressions;
 using SkiaSharp;
-using Newtonsoft.Json.Linq;
-using UndefinedBot.Core;
-using UndefinedBot.Core.NetWork;
-using UndefinedBot.Core.Command;
-using Newtonsoft.Json;
 
-namespace Command.Queto
+namespace Command.Quote
 {
-    internal class TextRender
+    abstract internal class TextRender
     {
         public static readonly Dictionary<string, string> QFaceReference = new()
         {
@@ -85,27 +77,24 @@ namespace Command.Queto
         public static void GenTextImage(string tempFilePath, string text, int fontSize, int width, int height)
         {
             //Location:SKPoint->Bottom Center
-            SKSurface Surface = SKSurface.Create(new SKImageInfo(width, height));
-            SKCanvas Canvas = Surface.Canvas;
-            Canvas.Clear(SKColors.Transparent);
-            DrawTextWithWrapping(Canvas, text, new SKRect(0, 0, width, height), fontSize);
-            SKImage TempImage = Surface.Snapshot();
-            SKData TempData = TempImage.Encode(SKEncodedImageFormat.Png, 100);
-            FileStream TempFileStream = File.OpenWrite(tempFilePath);
-            if (TempFileStream != null)
-            {
-                TempData.SaveTo(TempFileStream);
-                TempFileStream.Close();
-            }
-            TempData.Dispose();
-            TempImage.Dispose();
-            Canvas.Dispose();
-            Surface.Dispose();
+            SKSurface surface = SKSurface.Create(new SKImageInfo(width, height));
+            SKCanvas canvas = surface.Canvas;
+            canvas.Clear(SKColors.Transparent);
+            DrawTextWithWrapping(canvas, text, new SKRect(0, 0, width, height), fontSize);
+            SKImage tempImage = surface.Snapshot();
+            SKData tempData = tempImage.Encode(SKEncodedImageFormat.Png, 100);
+            FileStream tempFileStream = File.OpenWrite(tempFilePath);
+            tempData.SaveTo(tempFileStream);
+            tempFileStream.Close();
+            tempData.Dispose();
+            tempImage.Dispose();
+            canvas.Dispose();
+            surface.Dispose();
         }
 
         private static void DrawTextWithWrapping(SKCanvas canvas, string text, SKRect textArea, int fontSize)
         {
-            SKPaint PaintEmoji = new SKPaint
+            SKPaint paintEmoji = new SKPaint
             {
                 Typeface = SKTypeface.FromFamilyName("Segoe UI Emoji"),
                 TextSize = fontSize,
@@ -115,7 +104,7 @@ namespace Command.Queto
                 TextAlign = SKTextAlign.Center,
                 IsLinearText = true,
             };
-            SKPaint PaintText = new SKPaint
+            SKPaint paintText = new SKPaint
             {
                 Typeface = SKTypeface.FromFamilyName("Simsun"),
                 TextSize = fontSize,
@@ -125,41 +114,41 @@ namespace Command.Queto
                 TextAlign = SKTextAlign.Center,
                 IsLinearText = true,
             };
-            SKPoint DrawPosition = new(textArea.Width / 2, fontSize);
-            List<List<string>> Lines = SplitString(text, fontSize, textArea.Width - fontSize * 1.5F, PaintText);
-            float yOffset = (textArea.Height / 2) - (Lines.Count * fontSize / 2);
-            for (int i = 0; i < Lines.Count; i++)
+            SKPoint drawPosition = new(textArea.Width / 2.0F, fontSize);
+            List<List<string>> lines = SplitString(text, fontSize, textArea.Width - fontSize * 1.5F, paintText);
+            float yOffset = (textArea.Height / 2.0F) - (lines.Count * fontSize / 2.0F);
+            foreach (List<string> t in lines)
             {
-                DrawLine(canvas, Lines[i], new SKPoint(DrawPosition.X, DrawPosition.Y + yOffset), PaintEmoji, PaintText);
+                DrawLine(canvas, t, new SKPoint(drawPosition.X, drawPosition.Y + yOffset), paintEmoji, paintText);
                 yOffset += fontSize;
                 if (yOffset + fontSize > textArea.Height)
                 {
                     break;
                 }
             }
-            PaintEmoji.Dispose();
-            PaintText.Dispose();
+            paintEmoji.Dispose();
+            paintText.Dispose();
         }
         private static void DrawLine(SKCanvas canvas, List<string> lineText, SKPoint linePosition, SKPaint paintEmoji, SKPaint paintText)
         {
-            float FontSize = paintText.TextSize;
-            float LineWidth = 0;
+            float fontSize = paintText.TextSize;
+            float lineWidth = 0;
             foreach (string index in lineText)
             {
-                LineWidth += IsEmoji(index) ? paintEmoji.MeasureText(index) : paintText.MeasureText(index);
+                lineWidth += IsEmoji(index) ? paintEmoji.MeasureText(index) : paintText.MeasureText(index);
             }
-            float LPos = linePosition.X - LineWidth / 2 + FontSize / 2;
-            foreach (string TE in lineText)
+            float lPos = linePosition.X - lineWidth / 2.0F + fontSize / 2.0F;
+            foreach (string te in lineText)
             {
-                if (IsEmoji(TE))
+                if (IsEmoji(te))
                 {
-                    canvas.DrawText(TE, LPos + paintEmoji.MeasureText(TE) / 2, linePosition.Y, paintEmoji);
-                    LPos += paintEmoji.MeasureText(TE);
+                    canvas.DrawText(te, lPos + paintEmoji.MeasureText(te) / 2.0F, linePosition.Y, paintEmoji);
+                    lPos += paintEmoji.MeasureText(te);
                 }
                 else
                 {
-                    canvas.DrawText(TE, LPos + paintText.MeasureText(TE) / 2, linePosition.Y, paintText);
-                    LPos += paintText.MeasureText(TE);
+                    canvas.DrawText(te, lPos + paintText.MeasureText(te) / 2.0F, linePosition.Y, paintText);
+                    lPos += paintText.MeasureText(te);
                 }
             }
         }
@@ -167,53 +156,53 @@ namespace Command.Queto
         {
             width -= fontSize;
             List<List<string>> output = [];
-            List<string> TempLine = [];
-            List<string> Elements = [];
-            float CLength = 0;
-            TextElementEnumerator ElementEnumerator = StringInfo.GetTextElementEnumerator(input);
-            ElementEnumerator.Reset();
-            while (ElementEnumerator.MoveNext())
+            List<string> tempLine = [];
+            List<string> elements = [];
+            float cLength = 0;
+            TextElementEnumerator elementEnumerator = StringInfo.GetTextElementEnumerator(input);
+            elementEnumerator.Reset();
+            while (elementEnumerator.MoveNext())
             {
-                Elements.Add(ElementEnumerator.GetTextElement());
+                elements.Add(elementEnumerator.GetTextElement());
             }
-            if (Elements.Count > 1)
+            if (elements.Count > 1)
             {
-                string TempString = Elements[0];
-                for (int index = 1; index < Elements.Count; index++)
+                string tempString = elements[0];
+                for (int index = 1; index < elements.Count; index++)
                 {
-                    if (IsEmoji(Elements[index - 1]) == IsEmoji(Elements[index]))
+                    if (IsEmoji(elements[index - 1]) == IsEmoji(elements[index]))
                     {
-                        TempString += Elements[index];
+                        tempString += elements[index];
                     }
                     else
                     {
-                        TempLine.Add(TempString);
-                        TempString = Elements[index];
+                        tempLine.Add(tempString);
+                        tempString = elements[index];
                     }
-                    if (IsEmoji(Elements[index - 1]))
+                    if (IsEmoji(elements[index - 1]))
                     {
-                        CLength += currentPaint.TextSize * 1.5F;
+                        cLength += currentPaint.TextSize * 1.5F;
                     }
                     else
                     {
-                        CLength += currentPaint.MeasureText(Elements[index - 1]);
+                        cLength += currentPaint.MeasureText(elements[index - 1]);
                     }
-                    if (CLength > width)
+                    if (cLength > width)
                     {
-                        if (TempString.Length > 0)
+                        if (tempString.Length > 0)
                         {
-                            TempLine.Add(TempString);
-                            TempString = "";
+                            tempLine.Add(tempString);
+                            tempString = "";
                         }
-                        output.Add(TempLine);
-                        TempLine = [];
-                        CLength = 0;
+                        output.Add(tempLine);
+                        tempLine = [];
+                        cLength = 0;
                     }
                 }
-                if (TempString.Length > 0)
+                if (tempString.Length > 0)
                 {
-                    TempLine.Add(TempString);
-                    output.Add(TempLine);
+                    tempLine.Add(tempString);
+                    output.Add(tempLine);
                 }
                 return output;
             }
@@ -224,36 +213,21 @@ namespace Command.Queto
         }
         private static bool IsEmoji(string textElement)
         {
-            UnicodeCategory UC = CharUnicodeInfo.GetUnicodeCategory(textElement.Length > 0 ? textElement[0] : ' ');
-            return UC == UnicodeCategory.OtherSymbol || UC == UnicodeCategory.ModifierSymbol ||
-                   UC == UnicodeCategory.PrivateUse || UC == UnicodeCategory.Surrogate;
-        }
-        private static bool IsASCII(char inputChar)
-        {
-            return inputChar >= 0x00 && inputChar < 0xFF;
-        }
-        private static bool IsASCII(string textElement)
-        {
-            if (textElement.Length != 1)
-            {
-                return false;
-            }
-            else
-            {
-                return textElement[0] >= 0x00 && textElement[0] < 0xFF;
-            }
+            UnicodeCategory uc = CharUnicodeInfo.GetUnicodeCategory(textElement.Length > 0 ? textElement[0] : ' ');
+            return uc == UnicodeCategory.OtherSymbol || uc == UnicodeCategory.ModifierSymbol ||
+                   uc == UnicodeCategory.PrivateUse || uc == UnicodeCategory.Surrogate;
         }
     }
     internal partial class RegexProvider
     {
         [GeneratedRegex(@"\[CQ:\S+\]")]
-        public static partial Regex GetCQEntityRegex();
+        public static partial Regex GetCqEntityRegex();
 
         [GeneratedRegex(@"\[CQ:at,qq=\d+\S*\]")]
-        public static partial Regex GetCQAtRegex();
+        public static partial Regex GetCqAtRegex();
 
         [GeneratedRegex(@"^\[CQ:reply,id=[-]*\d+\]")]
-        public static partial Regex GetCQReplyRegex();
+        public static partial Regex GetCqReplyRegex();
 
         [GeneratedRegex(@"\d+")]
         public static partial Regex GetIdRegex();

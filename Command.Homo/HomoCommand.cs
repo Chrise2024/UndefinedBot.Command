@@ -1,7 +1,5 @@
 ﻿using System.Text.RegularExpressions;
 using UndefinedBot.Core;
-using UndefinedBot.Core.Utils;
-using UndefinedBot.Core.Command;
 
 namespace Command.Homo
 {
@@ -15,22 +13,23 @@ namespace Command.Homo
             _pluginName = pluginName;
             _undefinedApi.RegisterCommand("homo")
                 .Alias(["homoize"])
-                .Description("{0}homo - 恶臭数字论证\n使用方法：{0}homo number")
-                .ShortDescription("{0}homo - 恶臭数字论证")
+                .Description("逸一时误一世")
+                .ShortDescription("恶臭数字论证")
+                .Usage("{0}homo [number]")
                 .Example(" {0}homo 10086")
-                .Action(async (ArgSchematics args) =>
+                .Action(async (args) =>
                 {
                     if (args.Param.Count > 0)
                     {
-                        string Res = Homo.Homoize(args.Param[0], out bool Status);
-                        if (Status)
+                        string res = Homo.Homoize(args.Param[0], status: out bool status);
+                        if (status)
                         {
 
                             await _undefinedApi.Api.SendGroupMsg(
                                                 args.GroupId,
                                                 _undefinedApi.GetMessageBuilder()
                                                     //.Reply(args.MsgId)
-                                                    .Text($"{args.Param[0]} = {Res}").Build()
+                                                    .Text($"{args.Param[0]} = {res}").Build()
                                             );
                         }
                         else
@@ -39,7 +38,7 @@ namespace Command.Homo
                                                 args.GroupId,
                                                 _undefinedApi.GetMessageBuilder()
                                                     //.Reply(args.MsgId)
-                                                    .Text($"{Res}").Build()
+                                                    .Text($"{res}").Build()
                                             );
                         }
                     }
@@ -47,11 +46,12 @@ namespace Command.Homo
             _undefinedApi.SubmitCommand();
         }
     }
-    internal class Homo
+
+    abstract internal class Homo
     {
         public static string Homoize(string input, out bool status)
         {
-            if (Int64.TryParse(input, out var inputNumber))
+            if (Int64.TryParse(input, out long inputNumber))
             {
                 if (inputNumber == 114514)
                 {
@@ -61,17 +61,11 @@ namespace Command.Homo
                 else
                 {
                     status = true;
-                    string TempResult = CalcHomo(inputNumber);
-                    TempResult = Regex.Replace(TempResult, @"([\*|\/])\(([^\+\-\(\)]+)\)", match => {
-                        return $"{match.Groups[1].Value}{match.Groups[2].Value}";
-                    });
-                    TempResult = Regex.Replace(TempResult, @"([\+|\-])\(([^\(\)]+)\)([\+|\-|\)])", match => {
-                        return $"{match.Groups[1].Value}{match.Groups[2].Value}{match.Groups[3].Value}";
-                    });
-                    TempResult = Regex.Replace(TempResult, @"([\+|\-])\(([^\(\)]+)\)$", match => {
-                        return $"{match.Groups[1].Value}{match.Groups[2].Value}";
-                    });
-                    return Regex.Replace(TempResult, @"\+-", "-");
+                    string tempResult = CalcHomo(inputNumber);
+                    tempResult = Regex.Replace(tempResult, @"([\*|\/])\(([^\+\-\(\)]+)\)", match => $"{match.Groups[1].Value}{match.Groups[2].Value}");
+                    tempResult = Regex.Replace(tempResult, @"([\+|\-])\(([^\(\)]+)\)([\+|\-|\)])", match => $"{match.Groups[1].Value}{match.Groups[2].Value}{match.Groups[3].Value}");
+                    tempResult = Regex.Replace(tempResult, @"([\+|\-])\(([^\(\)]+)\)$", match => $"{match.Groups[1].Value}{match.Groups[2].Value}");
+                    return Regex.Replace(tempResult, @"\+-", "-");
                 }
             }
             else
@@ -89,32 +83,29 @@ namespace Command.Homo
             else
             {
                 //Console.WriteLine($"{inputNumber} - {HomoDict.ContainsKey(inputNumber)}");
-                if (s_homoDict.TryGetValue(inputNumber, out var Result))
+                if (s_homoDict.TryGetValue(inputNumber, out string? result))
                 {
                     //Console.WriteLine($"{inputNumber} - {Result}");
-                    return Result;
+                    return result;
                 }
                 else
                 {
-                    long NumberDiv = GetMinDiv(inputNumber);
-                    string RTemp = $"{CalcHomo(NumberDiv)}*({CalcHomo((long)Math.Floor(1.0D * inputNumber / NumberDiv))})+{CalcHomo(inputNumber % NumberDiv)}";
-                    return Regex.Replace(RTemp, @"\*\(1\)|\+\(0\)", "");
+                    long numberDiv = GetMinDiv(inputNumber);
+                    string rTemp = $"{CalcHomo(numberDiv)}*({CalcHomo((long)Math.Floor(1.0D * inputNumber / numberDiv))})+{CalcHomo(inputNumber % numberDiv)}";
+                    return Regex.Replace(rTemp, @"\*\(1\)|\+\(0\)", "");
                 }
             }
         }
         private static long GetMinDiv(long inputNumber)
         {
-            List<long> HomoDictKeyR = [.. s_homoDict.Keys];
-            foreach (long index in HomoDictKeyR)
+            List<long> homoDictKeyR = [.. s_homoDict.Keys];
+            foreach (long index in homoDictKeyR.Where(index => inputNumber > index))
             {
-                if (inputNumber > index)
-                {
-                    return index;
-                }
+                return index;
             }
             return 1;
         }
-        public static readonly Dictionary<long, string> s_homoDict = new()
+        private static readonly Dictionary<long, string> s_homoDict = new()
         {
             { 114514 , "114514" },
             { 58596 , "114*514" },

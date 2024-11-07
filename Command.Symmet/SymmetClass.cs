@@ -1,7 +1,5 @@
 ﻿using UndefinedBot.Core;
 using UndefinedBot.Core.Utils;
-using UndefinedBot.Core.Command;
-using UndefinedBot.Net.Extra;
 
 namespace Command.Symmet
 {
@@ -16,25 +14,26 @@ namespace Command.Symmet
             _pluginName = pluginName;
             _imageConverter = new(_undefinedApi);
             _undefinedApi.RegisterCommand("symmet")
-                .Description("{0}symmet - 图片、表情对称\n使用方法：{0}symmet <对称方法> [表情/图片] 或用 {0}symmet <对称方法> 回复[表情/图片]，支持上下、下上、左右、右左")
-                .ShortDescription("{0}symmet - 图片、表情对称")
+                .Description("图片、表情对称\n支持上下、下上、左右、右左、左上、左下、右上、右下")
+                .ShortDescription("图片、表情对称")
+                .Usage("{0}symmet [对称方法] [表情/图片] Or 用 {0}symmet [对称方法] 回复[表情/图片]")
                 .Example("{0}symmet 上下 [图片]")
-                .Action(async (ArgSchematics args) =>
+                .Action(async (args) =>
                 {
                     if (args.Param.Count > 1)
                     {
-                        string ImageCachePath;
+                        string imageCachePath;
                         //ParamFormat: [Pattern] [ImageUrl]
                         if (args.Param[1].StartsWith("http"))
                         {
-                            ImageCachePath = _imageConverter.GetConvertedImage(args.Param[1], ImageContentType.Url, args.Param[0]);
+                            imageCachePath = _imageConverter.GetConvertedImage(args.Param[1], ImageContentType.Url, args.Param[0]);
                         }
                         //ParamFormat: [MsgId] [Pattern]
                         else
                         {
-                            ImageCachePath = _imageConverter.GetConvertedImage(args.Param[0], ImageContentType.MsgId, args.Param[1]);
+                            imageCachePath = _imageConverter.GetConvertedImage(args.Param[0], ImageContentType.MsgId, args.Param[1]);
                         }
-                        if (ImageCachePath.Length == 0)
+                        if (imageCachePath.Length == 0)
                         {
                             _undefinedApi.Logger.Error("symmet", "Pic Convert Failed");
                             await _undefinedApi.Api.SendGroupMsg(
@@ -49,14 +48,14 @@ namespace Command.Symmet
                                         args.GroupId,
                                         _undefinedApi.GetMessageBuilder()
                                             .Reply(args.MsgId)
-                                            .Image(ImageCachePath, ImageSendType.LocalFile, ImageSubType.Normal).Build()
+                                            .Image(imageCachePath, ImageSendType.LocalFile, ImageSubType.Normal).Build()
                                     );
-                            FileIO.SafeDeleteFile(ImageCachePath);
+                            FileIo.SafeDeleteFile(imageCachePath);
                         }
                     }
                     else
                     {
-                        _undefinedApi.Logger.Error("symmet","Unproper Arg: Too Less args");
+                        _undefinedApi.Logger.Error("symmet","Improper Arg: Too Less args");
                     }
                 });
             _undefinedApi.SubmitCommand();

@@ -1,9 +1,8 @@
-﻿using UndefinedBot.Core;
-using UndefinedBot.Core.Utils;
+﻿using Newtonsoft.Json;
+using UndefinedBot.Core;
 using UndefinedBot.Core.Command;
-using Newtonsoft.Json;
 
-namespace Command.Template
+namespace Command.Raw
 {
     public class RawCommand
     {
@@ -17,20 +16,20 @@ namespace Command.Template
                 .Description("{0}raw - 群u到底发的什么东西\n使用方法：用{0}raw 回复想生成的消息")
                 .ShortDescription("{0}raw - 原始消息")
                 .Example("{0}raw")
-                .Action(async (ArgSchematics args) =>
+                .Action(async (args) =>
                 {
                     if (args.Param.Count > 0)
                     {
-                        MsgBodySchematics TargetMsg = await _undefinedApi.Api.GetMsg(args.Param[0]);
+                        MsgBodySchematics targetMsg = await _undefinedApi.Api.GetMsg(args.Param[0]);
                         await _undefinedApi.Api.SendGroupMsg(
                                         args.GroupId,
                                         _undefinedApi.GetMessageBuilder()
-                                            .Text(JsonConvert.SerializeObject(TargetMsg.Message, Formatting.Indented)).Build()
+                                            .Text(JsonConvert.SerializeObject(targetMsg.Message, Formatting.Indented)).Build()
                                     );
                     }
                     else
                     {
-                        _undefinedApi.Logger.Error("raw",$"Unproper Arg: Too Less args, At Command <{args.Command}>");
+                        _undefinedApi.Logger.Error("raw",$"Improper Arg: Too Less args, At Command <{args.Command}>");
                     }
                 });
             _undefinedApi.SubmitCommand();

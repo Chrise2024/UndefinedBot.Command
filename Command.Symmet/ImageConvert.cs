@@ -1,15 +1,11 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Imaging;
 using ImageMagick;
-using ImageMagick.Drawing;
-using UndefinedBot.Core.NetWork;
-using UndefinedBot.Core.Utils;
-using UndefinedBot.Core.Command;
-using UndefinedBot.Core;
 using Newtonsoft.Json.Linq;
+using UndefinedBot.Core;
+using UndefinedBot.Core.Command;
 
-namespace UndefinedBot.Net.Extra
+namespace Command.Symmet
 {
     public enum ImageContentType
     {
@@ -21,65 +17,65 @@ namespace UndefinedBot.Net.Extra
         private readonly UndefinedAPI _imageApi = imageApi;
         public string GetConvertedImage(string imageContent, ImageContentType contentType, string convertMethod = "L")
         {
-            Image? Im;
-            MemoryStream? Ms;
+            Image? im;
+            MemoryStream? ms;
             if (contentType == ImageContentType.Url)
             {
-                byte[] ImageBytes = _imageApi.Request.GetBinary(imageContent).Result;
-                Ms = new MemoryStream(ImageBytes);
-                Im = Image.FromStream(Ms);
+                byte[] imageBytes = _imageApi.Request.GetBinary(imageContent).Result;
+                ms = new MemoryStream(imageBytes);
+                im = Image.FromStream(ms);
             }
             else
             {
-                MsgBodySchematics TargetMsg = _imageApi.Api.GetMsg(imageContent).Result;
-                if ((TargetMsg.MessageId ?? 0) == 0)
+                MsgBodySchematics targetMsg = _imageApi.Api.GetMsg(imageContent).Result;
+                if ((targetMsg.MessageId ?? 0) == 0)
                 {
                     return "";
                 }
                 else
                 {
-                    byte[] ImageBytes = _imageApi.Request.GetBinary(ExtractUrlFromMsg(TargetMsg)).Result;
-                    Ms = new MemoryStream(ImageBytes);
-                    Im = Image.FromStream(Ms);
+                    byte[] imageBytes = _imageApi.Request.GetBinary(ExtractUrlFromMsg(targetMsg)).Result;
+                    ms = new MemoryStream(imageBytes);
+                    im = Image.FromStream(ms);
                 }
             }
-            if (Im != null)
+            if (im != null)
             {
-                if (Im.RawFormat.Equals(ImageFormat.Gif))
+                if (im.RawFormat.Equals(ImageFormat.Gif))
                 {
-                    string ImCachePath = Path.Join(_imageApi.CachePath, $"{DateTime.Now:HH-mm-ss}.gif");
-                    MagickImageCollection ResultImage = GifConvert.GifTransform(Im, convertMethod);
-                    if (ResultImage.Count > 0)
+                    string imCachePath = Path.Join(_imageApi.CachePath, $"{DateTime.Now:HH-mm-ss}.gif");
+                    MagickImageCollection resultImage = GifConvert.GifTransform(im, convertMethod);
+                    if (resultImage.Count > 0)
                     {
-                        ResultImage.Write(ImCachePath);
-                        ResultImage.Dispose();
-                        Im.Dispose();
-                        Ms.Close();
-                        return ImCachePath;
+                        resultImage.Write(imCachePath);
+                        resultImage.Dispose();
+                        im.Dispose();
+                        ms.Close();
+                        return imCachePath;
                     }
                     else
                     {
-                        Im.Dispose();
-                        Ms.Close();
+                        im.Dispose();
+                        ms.Close();
                         return "";
                     }
                 }
                 else
                 {
-                    string ImCachePath = Path.Join(_imageApi.CachePath, $"{DateTime.Now:HH-mm-ss}.png");
-                    Bitmap ResultImage = PicConvert.PicTransform(new Bitmap(Im), convertMethod);
-                    if (ResultImage != null)
+                    string imCachePath = Path.Join(_imageApi.CachePath, $"{DateTime.Now:HH-mm-ss}.png");
+                    Bitmap resultImage = PicConvert.PicTransform(new Bitmap(im), convertMethod);
+                    if (resultImage != null)
                     {
-                        ResultImage.Save(ImCachePath, ImageFormat.Gif);
-                        ResultImage.Dispose();
-                        Im.Dispose();
-                        Ms.Close();
-                        return ImCachePath;
+                        resultImage.Save(imCachePath, ImageFormat.Gif);
+                        resultImage.Dispose();
+                        im.Dispose();
+                        ms.Close();
+                        return imCachePath;
                     }
                     else
                     {
-                        Im.Dispose();
-                        Ms.Close();
+                        im.Dispose();
+                        ms.Close();
                         return "";
                     }
                 }
@@ -89,28 +85,28 @@ namespace UndefinedBot.Net.Extra
                 return "";
             }
         }
-        internal string ExtractUrlFromMsg(MsgBodySchematics msgBody)
+        private string ExtractUrlFromMsg(MsgBodySchematics msgBody)
         {
             if (msgBody.Message?.Count > 0)
             {
-                List<JObject> MsgChain = msgBody.Message;
-                if (MsgChain.Count > 0)
+                List<JObject> msgChain = msgBody.Message;
+                if (msgChain.Count > 0)
                 {
-                    JObject Msg = MsgChain[0];
-                    if (Msg.Value<string>("type")?.Equals("image") ?? false)
+                    JObject msg = msgChain[0];
+                    if (msg.Value<string>("type")?.Equals("image") ?? false)
                     {
-                        if (Msg.TryGetValue("data", out var JT))
+                        if (msg.TryGetValue("data", out var jt))
                         {
-                            JObject? DataObj = JT.ToObject<JObject>();
-                            if (DataObj != null)
+                            JObject? dataObj = jt.ToObject<JObject>();
+                            if (dataObj != null)
                             {
-                                if (DataObj.TryGetValue("url", out var Temp))
+                                if (dataObj.TryGetValue("url", out var temp))
                                 {
-                                    return Temp.ToObject<string>() ?? "";
+                                    return temp.ToObject<string>() ?? "";
                                 }
                                 else
                                 {
-                                    return DataObj.Value<string>("file") ?? "";
+                                    return dataObj.Value<string>("file") ?? "";
                                 }
                             }
                         }
@@ -120,189 +116,187 @@ namespace UndefinedBot.Net.Extra
             return "";
         }
     }
-    internal class ImageSymmetry
+    abstract internal class ImageSymmetry
     {
         public static Bitmap SymmetryL(Bitmap bmp)
         {
-            int RW = bmp.Width / 2;
-            Rectangle CropRect = new(0, 0, RW, bmp.Height);
-            Bitmap CroppedImage = bmp.Clone(CropRect, bmp.PixelFormat);
-            Bitmap Bg = new(bmp.Width, bmp.Height);
-            Graphics g = Graphics.FromImage(Bg);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(0, 0));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipY);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(RW, 0));
+            int rw = bmp.Width / 2;
+            Rectangle cropRect = new(0, 0, rw, bmp.Height);
+            Bitmap croppedImage = bmp.Clone(cropRect, bmp.PixelFormat);
+            Bitmap bg = new(bmp.Width, bmp.Height);
+            Graphics g = Graphics.FromImage(bg);
+            g.DrawImage(croppedImage, new Point(0, 0));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipY);
+            g.DrawImage(croppedImage, new Point(rw, 0));
             bmp.Dispose();
-            CroppedImage.Dispose();
-            return Bg;
+            croppedImage.Dispose();
+            return bg;
         }
         public static Bitmap SymmetryR(Bitmap bmp)
         {
-            int RW = bmp.Width / 2;
-            Rectangle CropRect = new(RW, 0, RW, bmp.Height);
-            Bitmap CroppedImage = bmp.Clone(CropRect, bmp.PixelFormat);
-            Bitmap Bg = new(bmp.Width, bmp.Height);
-            Graphics g = Graphics.FromImage(Bg);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(RW, 0));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipY);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(0, 0));
+            int rw = bmp.Width / 2;
+            Rectangle cropRect = new(rw, 0, rw, bmp.Height);
+            Bitmap croppedImage = bmp.Clone(cropRect, bmp.PixelFormat);
+            Bitmap bg = new(bmp.Width, bmp.Height);
+            Graphics g = Graphics.FromImage(bg);
+            g.DrawImage(croppedImage, new Point(rw, 0));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipY);
+            g.DrawImage(croppedImage, new Point(0, 0));
             bmp.Dispose();
-            CroppedImage.Dispose();
-            return Bg;
+            croppedImage.Dispose();
+            return bg;
         }
         public static Bitmap SymmetryU(Bitmap bmp)
         {
-            int RH = bmp.Height / 2;
-            Rectangle CropRect = new(0, 0, bmp.Width, RH);
-            Bitmap CroppedImage = bmp.Clone(CropRect, bmp.PixelFormat);
-            Bitmap Bg = new(bmp.Width, bmp.Height);
-            Graphics g = Graphics.FromImage(Bg);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(0, 0));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(0, RH));
+            int rh = bmp.Height / 2;
+            Rectangle cropRect = new(0, 0, bmp.Width, rh);
+            Bitmap croppedImage = bmp.Clone(cropRect, bmp.PixelFormat);
+            Bitmap bg = new(bmp.Width, bmp.Height);
+            Graphics g = Graphics.FromImage(bg);
+            g.DrawImage(croppedImage, new Point(0, 0));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
+            g.DrawImage(croppedImage, new Point(0, rh));
             bmp.Dispose();
-            CroppedImage.Dispose();
-            return Bg;
+            croppedImage.Dispose();
+            return bg;
         }
         public static Bitmap SymmetryD(Bitmap bmp)
         {
-            int RH = bmp.Height / 2;
-            Rectangle CropRect = new(0, RH, bmp.Width, RH);
-            Bitmap CroppedImage = bmp.Clone(CropRect, bmp.PixelFormat);
-            Bitmap Bg = new(bmp.Width, bmp.Height);
-            Graphics g = Graphics.FromImage(Bg);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(0, RH));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(0, 0));
+            int rh = bmp.Height / 2;
+            Rectangle cropRect = new(0, rh, bmp.Width, rh);
+            Bitmap croppedImage = bmp.Clone(cropRect, bmp.PixelFormat);
+            Bitmap bg = new(bmp.Width, bmp.Height);
+            Graphics g = Graphics.FromImage(bg);
+            g.DrawImage(croppedImage, new Point(0, rh));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
+            g.DrawImage(croppedImage, new Point(0, 0));
             bmp.Dispose();
-            CroppedImage.Dispose();
-            return Bg;
+            croppedImage.Dispose();
+            return bg;
         }
-        public static Bitmap SymmetryLU(Bitmap bmp)
+        public static Bitmap SymmetryLu(Bitmap bmp)
         {
-            int RW = bmp.Width / 2;
-            int RH = bmp.Height / 2;
-            Rectangle CropRect = new(0, 0, RW, RH);
-            Bitmap CroppedImage = bmp.Clone(CropRect, bmp.PixelFormat);
-            Bitmap Bg = new(bmp.Width, bmp.Height);
-            Graphics g = Graphics.FromImage(Bg);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(0, 0));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(0, RH));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipY);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(RW, RH));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(RW, 0));
+            int rw = bmp.Width / 2;
+            int rh = bmp.Height / 2;
+            Rectangle cropRect = new(0, 0, rw, rh);
+            Bitmap croppedImage = bmp.Clone(cropRect, bmp.PixelFormat);
+            Bitmap bg = new(bmp.Width, bmp.Height);
+            Graphics g = Graphics.FromImage(bg);
+            g.DrawImage(croppedImage, new Point(0, 0));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
+            g.DrawImage(croppedImage, new Point(0, rh));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipY);
+            g.DrawImage(croppedImage, new Point(rw, rh));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
+            g.DrawImage(croppedImage, new Point(rw, 0));
             bmp.Dispose();
-            CroppedImage.Dispose();
-            return Bg;
+            croppedImage.Dispose();
+            return bg;
         }
-        public static Bitmap SymmetryRU(Bitmap bmp)
+        public static Bitmap SymmetryRu(Bitmap bmp)
         {
-            int RW = bmp.Width / 2;
-            int RH = bmp.Height / 2;
-            Rectangle CropRect = new(RW, 0, RW, RH);
-            Bitmap CroppedImage = bmp.Clone(CropRect, bmp.PixelFormat);
-            Bitmap Bg = new(bmp.Width, bmp.Height);
-            Graphics g = Graphics.FromImage(Bg);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(RW, 0));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(RW, RH));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipY);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(0, RH));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(0, 0));
+            int rw = bmp.Width / 2;
+            int rh = bmp.Height / 2;
+            Rectangle cropRect = new(rw, 0, rw, rh);
+            Bitmap croppedImage = bmp.Clone(cropRect, bmp.PixelFormat);
+            Bitmap bg = new(bmp.Width, bmp.Height);
+            Graphics g = Graphics.FromImage(bg);
+            g.DrawImage(croppedImage, new Point(rw, 0));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
+            g.DrawImage(croppedImage, new Point(rw, rh));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipY);
+            g.DrawImage(croppedImage, new Point(0, rh));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
+            g.DrawImage(croppedImage, new Point(0, 0));
             bmp.Dispose();
-            CroppedImage.Dispose();
-            return Bg;
+            croppedImage.Dispose();
+            return bg;
         }
-        public static Bitmap SymmetryLD(Bitmap bmp)
+        public static Bitmap SymmetryLd(Bitmap bmp)
         {
-            int RW = bmp.Width / 2;
-            int RH = bmp.Height / 2;
-            Rectangle CropRect = new(0, RH, RW, RH);
-            Bitmap CroppedImage = bmp.Clone(CropRect, bmp.PixelFormat);
-            Bitmap Bg = new(bmp.Width, bmp.Height);
-            Graphics g = Graphics.FromImage(Bg);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(0, RH));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(0, 0));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipY);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(RW, 0));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(RW, RH));
+            int rw = bmp.Width / 2;
+            int rh = bmp.Height / 2;
+            Rectangle cropRect = new(0, rh, rw, rh);
+            Bitmap croppedImage = bmp.Clone(cropRect, bmp.PixelFormat);
+            Bitmap bg = new(bmp.Width, bmp.Height);
+            Graphics g = Graphics.FromImage(bg);
+            g.DrawImage(croppedImage, new Point(0, rh));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
+            g.DrawImage(croppedImage, new Point(0, 0));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipY);
+            g.DrawImage(croppedImage, new Point(rw, 0));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
+            g.DrawImage(croppedImage, new Point(rw, rh));
             bmp.Dispose();
-            CroppedImage.Dispose();
-            return Bg;
+            croppedImage.Dispose();
+            return bg;
         }
-        public static Bitmap SymmetryRD(Bitmap bmp)
+        public static Bitmap SymmetryRd(Bitmap bmp)
         {
-            int RW = bmp.Width / 2;
-            int RH = bmp.Height / 2;
-            Rectangle CropRect = new(RW, RH, RW, RH);
-            Bitmap CroppedImage = bmp.Clone(CropRect, bmp.PixelFormat);
-            Bitmap Bg = new(bmp.Width, bmp.Height);
-            Graphics g = Graphics.FromImage(Bg);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(RW, RH));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(RW, 0));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipY);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(0, 0));
-            CroppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
-            g.DrawImage(CroppedImage, new System.Drawing.Point(0, RH));
+            int rw = bmp.Width / 2;
+            int rh = bmp.Height / 2;
+            Rectangle cropRect = new(rw, rh, rw, rh);
+            Bitmap croppedImage = bmp.Clone(cropRect, bmp.PixelFormat);
+            Bitmap bg = new(bmp.Width, bmp.Height);
+            Graphics g = Graphics.FromImage(bg);
+            g.DrawImage(croppedImage, new Point(rw, rh));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
+            g.DrawImage(croppedImage, new Point(rw, 0));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipY);
+            g.DrawImage(croppedImage, new Point(0, 0));
+            croppedImage.RotateFlip(RotateFlipType.Rotate180FlipX);
+            g.DrawImage(croppedImage, new Point(0, rh));
             bmp.Dispose();
-            CroppedImage.Dispose();
-            return Bg;
+            croppedImage.Dispose();
+            return bg;
         }
     }
-
-    internal class PicConvert
+    abstract internal class PicConvert
     {
         public static Bitmap PicTransform(Bitmap picImage, string method)
         {
-            var TransformMethod = ImageSymmetry.SymmetryL;
+            var transformMethod = ImageSymmetry.SymmetryL;
             if (method.Equals("右左"))
             {
-                TransformMethod = ImageSymmetry.SymmetryR;
+                transformMethod = ImageSymmetry.SymmetryR;
             }
             else if (method.Equals("上下"))
             {
-                TransformMethod = ImageSymmetry.SymmetryU;
+                transformMethod = ImageSymmetry.SymmetryU;
             }
             else if (method.Equals("下上"))
             {
-                TransformMethod = ImageSymmetry.SymmetryD;
+                transformMethod = ImageSymmetry.SymmetryD;
             }
             else if (method.Equals("左上"))
             {
-                TransformMethod = ImageSymmetry.SymmetryLU;
+                transformMethod = ImageSymmetry.SymmetryLu;
             }
             else if (method.Equals("左下"))
             {
-                TransformMethod = ImageSymmetry.SymmetryLD;
+                transformMethod = ImageSymmetry.SymmetryLd;
             }
             else if (method.Equals("右上"))
             {
-                TransformMethod = ImageSymmetry.SymmetryRU;
+                transformMethod = ImageSymmetry.SymmetryRu;
             }
             else if (method.Equals("右下"))
             {
-                TransformMethod = ImageSymmetry.SymmetryRD;
+                transformMethod = ImageSymmetry.SymmetryRd;
             }
-            return TransformMethod(picImage);
+            return transformMethod(picImage);
         }
     }
-
-    internal class GifConvert
+    abstract internal class GifConvert
     {
 
-        private static readonly byte[] DefaultBytes = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0];
+        private static readonly byte[] s_defaultBytes = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0];
 
-        public static uint GetGifFrameDelay(Image image)
+        private static uint GetGifFrameDelay(Image image)
         {
             try
             {
-                return (uint)BitConverter.ToInt32(image.GetPropertyItem(0x5100)?.Value ?? DefaultBytes, 4);
+                return (uint)BitConverter.ToInt32(image.GetPropertyItem(0x5100)?.Value ?? s_defaultBytes, 4);
             }
             catch
             {
@@ -311,59 +305,59 @@ namespace UndefinedBot.Net.Extra
         }
         public static MagickImageCollection GifTransform(Image gifImage, string method)
         {
-            var TransformMethod = ImageSymmetry.SymmetryL;
+            var transformMethod = ImageSymmetry.SymmetryL;
             if (method.Equals("右左"))
             {
-                TransformMethod = ImageSymmetry.SymmetryR;
+                transformMethod = ImageSymmetry.SymmetryR;
             }
             else if (method.Equals("上下"))
             {
-                TransformMethod = ImageSymmetry.SymmetryU;
+                transformMethod = ImageSymmetry.SymmetryU;
             }
             else if (method.Equals("下上"))
             {
-                TransformMethod = ImageSymmetry.SymmetryD;
+                transformMethod = ImageSymmetry.SymmetryD;
             }
             else if (method.Equals("左上"))
             {
-                TransformMethod = ImageSymmetry.SymmetryLU;
+                transformMethod = ImageSymmetry.SymmetryLu;
             }
             else if (method.Equals("左下"))
             {
-                TransformMethod = ImageSymmetry.SymmetryLD;
+                transformMethod = ImageSymmetry.SymmetryLd;
             }
             else if (method.Equals("右上"))
             {
-                TransformMethod = ImageSymmetry.SymmetryRU;
+                transformMethod = ImageSymmetry.SymmetryRu;
             }
             else if (method.Equals("右下"))
             {
-                TransformMethod = ImageSymmetry.SymmetryRD;
+                transformMethod = ImageSymmetry.SymmetryRd;
             }
 
-            FrameDimension Dimension = new(gifImage.FrameDimensionsList[0]);
-            int FrameCount = gifImage.GetFrameCount(Dimension);
-            uint Delay = GetGifFrameDelay(gifImage);
-            var Ncollection = new MagickImageCollection();
-            for (int i = 0; i < FrameCount; i++)
+            FrameDimension dimension = new(gifImage.FrameDimensionsList[0]);
+            int frameCount = gifImage.GetFrameCount(dimension);
+            uint delay = GetGifFrameDelay(gifImage);
+            var ncollection = new MagickImageCollection();
+            for (int i = 0; i < frameCount; i++)
             {
-                gifImage.SelectActiveFrame(Dimension, i);
+                gifImage.SelectActiveFrame(dimension, i);
                 Bitmap frame = new(gifImage);
-                MemoryStream FMemoryStream = new();
-                TransformMethod(frame).Save(FMemoryStream, ImageFormat.Bmp);
-                FMemoryStream.Position = 0;
-                MagickImage MagickFrame = new(FMemoryStream)
+                MemoryStream fMemoryStream = new();
+                transformMethod(frame).Save(fMemoryStream, ImageFormat.Bmp);
+                fMemoryStream.Position = 0;
+                MagickImage magickFrame = new(fMemoryStream)
                 {
-                    AnimationDelay = Delay,
+                    AnimationDelay = delay,
                     GifDisposeMethod = GifDisposeMethod.Background
                 };
-                Ncollection.Add(MagickFrame);
-                FMemoryStream.Close();
+                ncollection.Add(magickFrame);
+                fMemoryStream.Close();
                 frame.Dispose();
             }
-            Ncollection[0].AnimationIterations = 0;
+            ncollection[0].AnimationIterations = 0;
             gifImage.Dispose();
-            return Ncollection;
+            return ncollection;
         }
     }
 }

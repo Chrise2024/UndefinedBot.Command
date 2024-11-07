@@ -18,7 +18,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Homo", "Command.Hom
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Mix", "Command.Mix\Command.Mix.csproj", "{A8876F34-E933-4D75-9345-B0171B4EC304}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Queto", "Command.Queto\Command.Queto.csproj", "{B5B79143-A63E-4CC7-BDEF-63D653A9A63A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Quote", "Command.Quote\Command.Quote.csproj", "{B5B79143-A63E-4CC7-BDEF-63D653A9A63A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Random", "Command.Random\Command.Random.csproj", "{0D5306BA-6A29-4B2D-B663-55CAB6A7CCC6}"
 EndProject

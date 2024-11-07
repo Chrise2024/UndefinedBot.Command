@@ -1,8 +1,4 @@
 ﻿using UndefinedBot.Core;
-using UndefinedBot.Core.Utils;
-using UndefinedBot.Core.Command;
-using Newtonsoft.Json;
-
 namespace Command.AnswerBook
 {
     public class AnswerBookCommand
@@ -15,10 +11,11 @@ namespace Command.AnswerBook
             _pluginName = pluginName;
             _undefinedApi.RegisterCommand("answerbook")
                 .Alias(["ab", "answer"])
-                .Description("{0}answerbook - 答案之书\n使用方法：{0}answerbook")
-                .ShortDescription("{0}answerbook - 答案之书")
+                .Description("当你遇到问题时，不妨试试这本答案之书。")
+                .ShortDescription("答案之书")
+                .Usage("{0}answerbook")
                 .Example("{0}answerbook")
-                .Action(async (ArgSchematics args) =>
+                .Action(async (args) =>
                 {
 
                     await _undefinedApi.Api.SendGroupMsg(
@@ -31,7 +28,7 @@ namespace Command.AnswerBook
             _undefinedApi.SubmitCommand();
         }
         private static readonly Random s_randomRoot = new();
-        public static string GetAnswer()
+        private static string GetAnswer()
         {
             return s_answerList[s_randomRoot.Next(s_answerList.Count)];
         }

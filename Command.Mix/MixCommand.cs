@@ -16,19 +16,20 @@ namespace Command.Template
             _pluginName = pluginName;
             _undefinedApi.RegisterCommand("mix")
                 .Alias(["mixemoji", "emojimix"])
-                .Description("{0}mix - 混合Emoji\n使用方法：{0}mix Emoji1 Emoji2")
-                .ShortDescription("{0}mix - 混合Emoji")
+                .Description("混合Emoji")
+                .ShortDescription("混合Emoji")
+                .Usage("mix [Emoji1] [Emoji2]")
                 .Example("{0}mix 😀 😁")
-                .Action(async (ArgSchematics args) =>
+                .Action(async (args) =>
                 {
-                    string MixRes = MixEmoji(args.Param);
-                    if (MixRes.Length > 0)
+                    string mixRes = MixEmoji(args.Param);
+                    if (mixRes.Length > 0)
                     {
                         await _undefinedApi.Api.SendGroupMsg(
                                         args.GroupId,
                                         _undefinedApi.GetMessageBuilder()
                                             .Reply(args.MsgId)
-                                            .Image(MixRes, ImageSendType.Url).Build()
+                                            .Image(mixRes, ImageSendType.Url).Build()
                                     );
                     }
                     else
@@ -48,10 +49,10 @@ namespace Command.Template
             {
                 if (emojiString.Length > 0)
                 {
-                    StringRuneEnumerator SRE = emojiString.EnumerateRunes();
-                    foreach (Rune R in SRE)
+                    StringRuneEnumerator stringRuneEnumerator = emojiString.EnumerateRunes();
+                    foreach (Rune r in stringRuneEnumerator)
                     {
-                        return R.Value;
+                        return r.Value;
                     }
                     return 0;
                 }
@@ -67,26 +68,26 @@ namespace Command.Template
         }
         private string MixEmoji(List<string> emojiStringArray)
         {
-            int E1CP;
-            int E2CP;
+            int e1Cp;
+            int e2Cp;
             if (emojiStringArray.Count == 1)
             {
-                List<string> LineElement = [];
-                TextElementEnumerator ElementEnumerator = StringInfo.GetTextElementEnumerator(emojiStringArray[0]);
-                ElementEnumerator.Reset();
-                while (ElementEnumerator.MoveNext())
+                List<string> lineElement = [];
+                TextElementEnumerator elementEnumerator = StringInfo.GetTextElementEnumerator(emojiStringArray[0]);
+                elementEnumerator.Reset();
+                while (elementEnumerator.MoveNext())
                 {
-                    string CurrentElement = ElementEnumerator.GetTextElement();
-                    if (IsEmoji(CurrentElement))
+                    string currentElement = elementEnumerator.GetTextElement();
+                    if (IsEmoji(currentElement))
                     {
-                        LineElement.Add(CurrentElement);
+                        lineElement.Add(currentElement);
                     }
                 }
-                if (LineElement.Count > 1)
+                if (lineElement.Count > 1)
                 {
 
-                    E1CP = GetEmojiUnicodePoint(LineElement[0]);
-                    E2CP = GetEmojiUnicodePoint(LineElement[1]);
+                    e1Cp = GetEmojiUnicodePoint(lineElement[0]);
+                    e2Cp = GetEmojiUnicodePoint(lineElement[1]);
                 }
                 else
                 {
@@ -95,38 +96,38 @@ namespace Command.Template
             }
             else if (emojiStringArray.Count > 1)
             {
-                E1CP = GetEmojiUnicodePoint(emojiStringArray[0]);
-                E2CP = GetEmojiUnicodePoint(emojiStringArray[1]);
+                e1Cp = GetEmojiUnicodePoint(emojiStringArray[0]);
+                e2Cp = GetEmojiUnicodePoint(emojiStringArray[1]);
             }
             else
             {
                 return "";
             }
-            string TUrlN = $"https://www.gstatic.com/android/keyboard/emojikitchen/20201001/u{E1CP:x}/u{E1CP:x}_u{E2CP:x}.png";
-            string TUrlR = $"https://www.gstatic.com/android/keyboard/emojikitchen/20201001/u{E2CP:x}/u{E2CP:x}_u{E1CP:x}.png";
-            byte[] Res = _undefinedApi.Request.GetBinary(TUrlN).Result;
-            if (Res.Length == 0 || Res[0] != 0x89)
+            string urlN = $"https://www.gstatic.com/android/keyboard/emojikitchen/20201001/u{e1Cp:x}/u{e1Cp:x}_u{e2Cp:x}.png";
+            string urlR = $"https://www.gstatic.com/android/keyboard/emojikitchen/20201001/u{e2Cp:x}/u{e2Cp:x}_u{e1Cp:x}.png";
+            byte[] res = _undefinedApi.Request.GetBinary(urlN).Result;
+            if (res.Length == 0 || res[0] != 0x89)
             {
-                Res = _undefinedApi.Request.GetBinary(TUrlR).Result;
-                if (Res.Length == 0 || Res[0] != 0x89)
+                res = _undefinedApi.Request.GetBinary(urlR).Result;
+                if (res.Length == 0 || res[0] != 0x89)
                 {
                     return "";
                 }
                 else
                 {
-                    return TUrlR;
+                    return urlR;
                 }
             }
             else
             {
-                return TUrlN;
+                return urlN;
             }
         }
         private bool IsEmoji(string textElement)
         {
-            UnicodeCategory UC = CharUnicodeInfo.GetUnicodeCategory(textElement.Length > 0 ? textElement[0] : ' ');
-            return UC == UnicodeCategory.OtherSymbol || UC == UnicodeCategory.ModifierSymbol ||
-                   UC == UnicodeCategory.PrivateUse || UC == UnicodeCategory.Surrogate;
+            UnicodeCategory uc = CharUnicodeInfo.GetUnicodeCategory(textElement.Length > 0 ? textElement[0] : ' ');
+            return uc == UnicodeCategory.OtherSymbol || uc == UnicodeCategory.ModifierSymbol ||
+                   uc == UnicodeCategory.PrivateUse || uc == UnicodeCategory.Surrogate;
         }
     }
 }

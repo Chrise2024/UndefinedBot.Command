@@ -1,6 +1,4 @@
-﻿using System;
-using UndefinedBot.Core.Command;
-using UndefinedBot.Core;
+﻿using UndefinedBot.Core;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using UndefinedBot.Core.Utils;
@@ -17,20 +15,21 @@ namespace Command.Random
             _pluginName = pluginName;
             _undefinedApi.RegisterCommand("random")
                 .Alias(["rand"])
-                .Description("{0}random - 随机图片\n使用方法：{0}random PicType\nacg - ACG\ndog - 哈基汪\ncat - 哈基米\nfox - 狐狸\nstar - 星空\nbg - 壁纸")
-                .ShortDescription("{0}random - 随机图片")
+                .Description("随机图片\n支持种类：\nacg - ACG\ndog - 哈基汪\ncat - 哈基米\nfox - 狐狸\nstar - 星空\nbg - 壁纸")
+                .ShortDescription("随机图片")
+                .Usage("{0}random [PicType]")
                 .Example("{0}random acg")
-                .Action(async (ArgSchematics args) =>
+                .Action(async (args) =>
                 {
                     if (args.Param.Count > 0)
                     {
-                        string OutUrl = GetRandomContent(args.Param[0]);
-                        if (OutUrl.Length > 0)
+                        string outUrl = GetRandomContent(args.Param[0]);
+                        if (outUrl.Length > 0)
                         {
                             await _undefinedApi.Api.SendGroupMsg(
                                             args.GroupId,
                                             _undefinedApi.GetMessageBuilder()
-                                                .Image(OutUrl, ImageSendType.Url).Build()
+                                                .Image(outUrl, ImageSendType.Url).Build()
                                         );
                         }
                         else
@@ -44,36 +43,36 @@ namespace Command.Random
                     }
                     else
                     {
-                        _undefinedApi.Logger.Error("random","Unproper Arg: Too Less args");
+                        _undefinedApi.Logger.Error("random","Improper Arg: Too Less args");
                     }
                 });
             _undefinedApi.SubmitCommand();
         }
-        private readonly System.Random s_randomRoot = new();
+        private readonly System.Random _randomRoot = new();
 
-        private string GetRandomContent(string RandType)
+        private string GetRandomContent(string randType)
         {
-            if (RandType.Equals("bg"))
+            if (randType.Equals("bg"))
             {
                 return RandomBingWallPaper();
             }
-            else if (RandType.Equals("fox"))
+            else if (randType.Equals("fox"))
             {
                 return RandomFox();
             }
-            else if (RandType.Equals("cat"))
+            else if (randType.Equals("cat"))
             {
                 return RandomCat();
             }
-            else if (RandType.Equals("dog"))
+            else if (randType.Equals("dog"))
             {
                 return RandomDog();
             }
-            else if (RandType.Equals("acg"))
+            else if (randType.Equals("acg"))
             {
-                return RandomACG();
+                return RandomAcg();
             }
-            else if (RandType.Equals("star"))
+            else if (randType.Equals("star"))
             {
                 return RandomStarrySky();
             }
@@ -83,12 +82,12 @@ namespace Command.Random
         {
             try
             {
-                JObject Resp = JObject.Parse(_undefinedApi.Request.Get($"https://www.bing.com/HPImageArchive.aspx?format=js&idx={s_randomRoot.Next(0, 32767)}&n=1").Result);
-                List<JObject> IA = Resp["images"]?.ToObject<List<JObject>>() ?? [];
-                if (IA.Count > 0)
+                JObject resp = JObject.Parse(_undefinedApi.Request.Get($"https://www.bing.com/HPImageArchive.aspx?format=js&idx={_randomRoot.Next(0, 32767)}&n=1").Result);
+                List<JObject> ia = resp["images"]?.ToObject<List<JObject>>() ?? [];
+                if (ia.Count > 0)
                 {
-                    string USuffix = IA[0].Value<string>("url") ?? "";
-                    return USuffix.Length > 0 ? $"https://www.bing.com{USuffix}" : "";
+                    string uSuffix = ia[0].Value<string>("url") ?? "";
+                    return uSuffix.Length > 0 ? $"https://www.bing.com{uSuffix}" : "";
                 }
                 else
                 {
@@ -102,18 +101,18 @@ namespace Command.Random
         }
         private string RandomFox()
         {
-            return $"https://randomfox.ca/images/{s_randomRoot.Next(1, 124)}.jpg";
+            return $"https://randomfox.ca/images/{_randomRoot.Next(1, 124)}.jpg";
         }
         private string RandomCat()
         {
             try
             {
-                if (s_randomRoot.Next(1, 100) > 64)
+                if (_randomRoot.Next(1, 100) > 64)
                 {
-                    List<JObject> IA = JsonConvert.DeserializeObject<List<JObject>>(_undefinedApi.Request.Get("https://api.thecatapi.com/v1/images/search").Result) ?? [];
-                    if (IA.Count > 0)
+                    List<JObject> ia = JsonConvert.DeserializeObject<List<JObject>>(_undefinedApi.Request.Get("https://api.thecatapi.com/v1/images/search").Result) ?? [];
+                    if (ia.Count > 0)
                     {
-                        return IA[0].Value<string>("url") ?? "";
+                        return ia[0].Value<string>("url") ?? "";
                     }
                     else
                     {
@@ -122,8 +121,8 @@ namespace Command.Random
                 }
                 else
                 {
-                    JObject Resp = JObject.Parse(_undefinedApi.Request.Get("https://nekobot.xyz/api/image?type=neko").Result);
-                    return Resp.Value<string>("message") ?? "";
+                    JObject resp = JObject.Parse(_undefinedApi.Request.Get("https://nekobot.xyz/api/image?type=neko").Result);
+                    return resp.Value<string>("message") ?? "";
                 }
             }
             catch
@@ -135,15 +134,15 @@ namespace Command.Random
         {
             try
             {
-                List<JObject> IA = JsonConvert.DeserializeObject<List<JObject>>(_undefinedApi.Request.Get("https://api.thedogapi.com/v1/images/search").Result) ?? [];
-                if (IA.Count > 0)
+                List<JObject> ia = JsonConvert.DeserializeObject<List<JObject>>(_undefinedApi.Request.Get("https://api.thedogapi.com/v1/images/search").Result) ?? [];
+                if (ia.Count > 0)
                 {
-                    return IA[0].Value<string>("url") ?? "";
+                    return ia[0].Value<string>("url") ?? "";
                 }
                 else
                 {
-                    JObject Resp = JObject.Parse(_undefinedApi.Request.Get("https://dog.ceo/api/breeds/image/random").Result);
-                    return Resp.Value<string>("message") ?? "";
+                    JObject resp = JObject.Parse(_undefinedApi.Request.Get("https://dog.ceo/api/breeds/image/random").Result);
+                    return resp.Value<string>("message") ?? "";
                 }
             }
             catch
@@ -151,19 +150,19 @@ namespace Command.Random
                 return "";
             }
         }
-        private string RandomACG()
+        private string RandomAcg()
         {
             try
             {
-                if (s_randomRoot.Next(1, 100) > 75)
+                if (_randomRoot.Next(1, 100) > 75)
                 {
                     return _undefinedApi.Request.Get("https://www.loliapi.com/bg/?type=url").Result.Replace(".cn", ".com");
                 }
                 else
                 {
-                    JObject Resp = JObject.Parse(_undefinedApi.Request.Get("https://iw233.cn/api.php?sort=cdniw&type=json").Result);
-                    List<string> IA = Resp["pic"]?.ToObject<List<string>>() ?? [];
-                    return IA.Count > 0 ? IA[0] : "";
+                    JObject resp = JObject.Parse(_undefinedApi.Request.Get("https://iw233.cn/api.php?sort=cdniw&type=json").Result);
+                    List<string> ia = resp["pic"]?.ToObject<List<string>>() ?? [];
+                    return ia.Count > 0 ? ia[0] : "";
                 }
             }
             catch
@@ -175,9 +174,9 @@ namespace Command.Random
         {
             try
             {
-                JObject Resp = JObject.Parse(_undefinedApi.Request.Get("https://moe.jitsu.top/api/?sort=starry&type=json").Result);
-                List<string> IA = Resp["pics"]?.ToObject<List<string>>() ?? [];
-                return IA.Count > 0 ? IA[0] : "";
+                JObject resp = JObject.Parse(_undefinedApi.Request.Get("https://moe.jitsu.top/api/?sort=starry&type=json").Result);
+                List<string> ia = resp["pics"]?.ToObject<List<string>>() ?? [];
+                return ia.Count > 0 ? ia[0] : "";
             }
             catch
             {
