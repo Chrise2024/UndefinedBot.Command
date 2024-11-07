@@ -13,8 +13,9 @@ namespace Command.Raw
             _undefinedApi = new(pluginName);
             _pluginName = pluginName;
             _undefinedApi.RegisterCommand("raw")
-                .Description("{0}raw - 群u到底发的什么东西\n使用方法：用{0}raw 回复想生成的消息")
+                .Description("{0}raw - 群u到底发的什么东西")
                 .ShortDescription("{0}raw - 原始消息")
+                .Usage("用{0}raw 回复想生成的消息")
                 .Example("{0}raw")
                 .Action(async (args) =>
                 {
