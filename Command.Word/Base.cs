@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UndefinedBot.Core;
 using UndefinedBot.Core.NetWork;
 
@@ -8,6 +9,7 @@ namespace Command.Word
     {
         private readonly UndefinedAPI _undefinedApi;
         private readonly string _pluginName;
+        private readonly Random _randRoot = new();
         public Base(string pluginName)
         {
             _undefinedApi = new(pluginName);
@@ -85,7 +87,7 @@ namespace Command.Word
                 });
             _undefinedApi.RegisterCommand("tg")
                 .Alias(["舔狗", "舔狗日记"])
-                .Description("舔狗日记\n使用方法：")
+                .Description("舔狗日记")
                 .ShortDescription("舔狗日记")
                 .Usage("{0}tg")
                 .Example("{0}tg")
@@ -105,12 +107,55 @@ namespace Command.Word
                         // ignored
                     }
                 });
+            _undefinedApi.RegisterCommand("onset")
+                .Alias(["发病"])
+                .Description("发病文案")
+                .ShortDescription("发病")
+                .Usage("{0}onset [发病对象]")
+                .Example("{0}onset 哈基米")
+                .Action(async (args) =>
+                {
+                    if (args.Param.Count > 0)
+                    {
+                        JObject resp = JObject.Parse(await _undefinedApi.Request.Get($"https://xiaobapi.top/api/xb/api/onset.php?name={args.Param[0]}"));
+                        await _undefinedApi.Api.SendGroupMsg(
+                            args.GroupId,
+                            _undefinedApi.GetMessageBuilder()
+                                .Text(resp.Value<string>("data") ?? "发病失败").Build()
+                        );
+                    }
+                    else
+                    {
+                        _undefinedApi.Logger.Error("onset", "Improper Arg: Too Less args");
+                    }
+                });
+            _undefinedApi.RegisterCommand("nosence")
+                .Alias(["废话"])
+                .Description("生成一篇废话文章")
+                .ShortDescription("废话文学")
+                .Usage("{0}nosence [标题]")
+                .Example("{0}onset Homo")
+                .Action(async (args) =>
+                {
+                    if (args.Param.Count > 0)
+                    {
+                        await _undefinedApi.Api.SendGroupMsg(
+                            args.GroupId,
+                            _undefinedApi.GetMessageBuilder()
+                                .Text(await _undefinedApi.Request.Get($"https://api.jkyai.top/API/gpbtwz/api.php?msg={args.Param[0]}&num={_randRoot.Next(150,450)}&type=text")).Build()
+                        );
+                    }
+                    else
+                    {
+                        _undefinedApi.Logger.Error("onset", "Improper Arg: Too Less args");
+                    }
+                });
             _undefinedApi.SubmitCommand();
         }
-        private async Task<HitokotoSchematics> GetHitokoto(string htioType = "")
+        private async Task<HitokotoSchematics> GetHitokoto(string hitoType = "")
         {
             string para = "";
-            foreach (char index in htioType)
+            foreach (char index in hitoType)
             {
                 if (index is >= 'a' and <= 'l')
                 {
@@ -124,7 +169,7 @@ namespace Command.Word
             }
             catch (TaskCanceledException ex)
             {
-                Console.WriteLine("Task Cacled: ");
+                Console.WriteLine("Task Canceled: ");
                 _undefinedApi.Logger.Error("hito", ex.Message);
                 _undefinedApi.Logger.Error("hito", ex.StackTrace ?? "");
                 return new HitokotoSchematics();

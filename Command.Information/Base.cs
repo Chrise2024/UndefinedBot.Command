@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Globalization;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UndefinedBot.Core;
 using UndefinedBot.Core.Utils;
@@ -55,6 +56,44 @@ namespace Command.Information
                         // ignored
                     }
                 });
+            _undefinedApi.RegisterCommand("bangumi")
+                .Alias(["今日新番","新番"])
+                .Description("当日番剧动漫更新列表")
+                .ShortDescription("今日新番")
+                .Usage("{0}bangumi")
+                .Example("{0}bangumi")
+                .Action(async (args) =>
+                {
+                    try
+                    {
+                        JObject resp = JObject.Parse(await _undefinedApi.Request.Get("https://xiaoapi.cn/API/zs_tf.php"));
+                        BangumiCollection? bc = resp.Value<BangumiCollection>("data");
+                        if (bc != null)
+                        {
+                            string outmsg = "";
+                            string nbbili = (bc?.Bili ?? []).Aggregate("", (current, bi) => current + $"{bi.Time} [{bi.Title}] {bi.Updata}\n");
+                            if (nbbili.Length > 0)
+                            {
+                                outmsg += ("----今日B站新番----\n" + nbbili);
+                            }
+                            string nbtx = (bc?.Tx ?? []).Aggregate("", (current, bi) => current + $"{bi.Time} [{bi.Title}] {bi.Updata}\n");
+                            if (nbtx.Length > 0)
+                            {
+                                outmsg += ("----今日腾讯新番----\n" + nbtx);
+                            }
+                            await _undefinedApi.Api.SendGroupMsg(
+                                args.GroupId,
+                                _undefinedApi.GetMessageBuilder()
+                                    .Text(outmsg)
+                                    .Build()
+                            );
+                        }
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                });
             _undefinedApi.SubmitCommand();
         }
         private void SafeDeleteFile(string tPath)
@@ -93,5 +132,20 @@ namespace Command.Information
             bg.Dispose();
             return imCachePath;
         }
+    }
+
+    internal struct BangumiInfo
+    {
+        [JsonProperty("id")]public int Id;
+        [JsonProperty("cover")]public string Cover;
+        [JsonProperty("title")]public string Title;
+        [JsonProperty("time")]public string Time;
+        [JsonProperty("updata")]public string Updata;
+    }
+
+    internal struct BangumiCollection
+    {
+        [JsonProperty("bili")]public List<BangumiInfo>? Bili;
+        [JsonProperty("tx")]public List<BangumiInfo>? Tx;
     }
 }

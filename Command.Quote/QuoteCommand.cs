@@ -146,7 +146,7 @@ namespace Command.Quote
             }
             catch (TaskCanceledException ex)
             {
-                Console.WriteLine("Task Cacled: ");
+                Console.WriteLine("Task Canceled: ");
                 _undefinedApi.Logger.Error("Genquote",ex.Message);
                 _undefinedApi.Logger.Error("Genquote", ex.StackTrace ?? "");
                 return new Bitmap(1, 1);
