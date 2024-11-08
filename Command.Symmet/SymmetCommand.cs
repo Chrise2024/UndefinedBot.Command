@@ -14,6 +14,7 @@ namespace Command.Symmet
             _pluginName = pluginName;
             _imageConverter = new(_undefinedApi);
             _undefinedApi.RegisterCommand("symmet")
+                .Alias(["对称"])
                 .Description("图片、表情对称\n支持上下、下上、左右、右左、左上、左下、右上、右下")
                 .ShortDescription("图片、表情对称")
                 .Usage("{0}symmet [对称方法] [表情/图片] Or 用 {0}symmet [对称方法] 回复[表情/图片]")
@@ -45,11 +46,11 @@ namespace Command.Symmet
                         else
                         {
                             await _undefinedApi.Api.SendGroupMsg(
-                                        args.GroupId,
-                                        _undefinedApi.GetMessageBuilder()
-                                            .Reply(args.MsgId)
-                                            .Image(imageCachePath, ImageSendType.LocalFile, ImageSubType.Normal).Build()
-                                    );
+                                args.GroupId,
+                                _undefinedApi.GetMessageBuilder()
+                                    .Reply(args.MsgId)
+                                    .Image(imageCachePath, ImageSendType.LocalFile, ImageSubType.Normal).Build()
+                            );
                             FileIo.SafeDeleteFile(imageCachePath);
                         }
                     }

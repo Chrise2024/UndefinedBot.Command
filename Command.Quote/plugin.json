@@ -1,5 +1,5 @@
 ﻿{
-  "name": "Queto Gen",
+  "name": "Quote Gen",
   "description": "入典生成器",
   "entry_file": "Command.Quote.dll",
   "entry_point": "QuoteCommand"

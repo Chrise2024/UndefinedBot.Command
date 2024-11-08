@@ -52,11 +52,10 @@ namespace Command.Word
                     try
                     {
                         await _undefinedApi.Api.SendGroupMsg(
-                                args.GroupId,
-                                _undefinedApi.GetMessageBuilder()
-                                    .Text(await _undefinedApi.Request.Get("https://api.vvhan.com/api/text/love")).Build()
-                            );
-
+                            args.GroupId,
+                            _undefinedApi.GetMessageBuilder()
+                                .Text(await _undefinedApi.Request.Get("https://api.vvhan.com/api/text/love")).Build()
+                        );
                     }
                     catch(Exception ex)
                     {
@@ -75,10 +74,10 @@ namespace Command.Word
                     try
                     {
                         await _undefinedApi.Api.SendGroupMsg(
-                                args.GroupId,
-                                _undefinedApi.GetMessageBuilder()
-                                    .Text(await _undefinedApi.Request.Get("https://api.vvhan.com/api/text/joke")).Build()
-                            );
+                            args.GroupId,
+                            _undefinedApi.GetMessageBuilder()
+                                .Text(await _undefinedApi.Request.Get("https://api.vvhan.com/api/text/joke")).Build()
+                        );
 
                     }
                     catch(Exception ex)
@@ -98,10 +97,10 @@ namespace Command.Word
                     try
                     {
                         await _undefinedApi.Api.SendGroupMsg(
-                                args.GroupId,
-                                _undefinedApi.GetMessageBuilder()
-                                    .Text(await _undefinedApi.Request.Get("https://api.vvhan.com/api/text/dog")).Build()
-                            );
+                            args.GroupId,
+                            _undefinedApi.GetMessageBuilder()
+                                .Text(await _undefinedApi.Request.Get("https://api.vvhan.com/api/text/dog")).Build()
+                        );
 
                     }
                     catch(Exception ex)

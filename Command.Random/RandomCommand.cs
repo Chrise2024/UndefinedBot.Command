@@ -14,7 +14,7 @@ namespace Command.Random
             _undefinedApi = new(pluginName);
             _pluginName = pluginName;
             _undefinedApi.RegisterCommand("random")
-                .Alias(["rand"])
+                .Alias(["rand","随机"])
                 .Description("随机图片\n支持种类：\nacg - ACG\ndog - 哈基汪\ncat - 哈基米\nfox - 狐狸\nstar - 星空\nbg - 壁纸")
                 .ShortDescription("随机图片")
                 .Usage("{0}random [PicType]")

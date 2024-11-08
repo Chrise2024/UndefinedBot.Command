@@ -15,7 +15,7 @@ namespace Command.Template
             _undefinedApi = new(pluginName);
             _pluginName = pluginName;
             _undefinedApi.RegisterCommand("mix")
-                .Alias(["mixemoji", "emojimix"])
+                .Alias(["mixemoji", "emojimix","混合"])
                 .Description("混合Emoji")
                 .ShortDescription("混合Emoji")
                 .Usage("mix [Emoji1] [Emoji2]")

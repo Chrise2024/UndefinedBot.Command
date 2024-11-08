@@ -10,7 +10,7 @@ namespace Command.AnswerBook
             _undefinedApi = new(pluginName);
             _pluginName = pluginName;
             _undefinedApi.RegisterCommand("answerbook")
-                .Alias(["ab", "answer"])
+                .Alias(["ab", "answer","答案之书"])
                 .Description("当你遇到问题时，不妨试试这本答案之书。")
                 .ShortDescription("答案之书")
                 .Usage("{0}answerbook [你的问题]")

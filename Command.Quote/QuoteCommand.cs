@@ -18,7 +18,7 @@ namespace Command.Quote
             _undefinedApi = new(pluginName);
             _pluginName = pluginName;
             _undefinedApi.RegisterCommand("quote")
-                .Alias(["q"])
+                .Alias(["q","入典"])
                 .Description("正义史官 - 生成切片（入典）")
                 .ShortDescription("生成切片（入典）")
                 .Usage("用{0}quote 回复想生成的消息")
