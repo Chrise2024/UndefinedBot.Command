@@ -51,9 +51,10 @@ namespace Command.Information
                                         );
                         }
                     }
-                    catch
+                    catch(Exception ex)
                     {
-                        // ignored
+                        Console.WriteLine(ex.ToString());
+                        Console.WriteLine(ex.StackTrace);
                     }
                 });
             _undefinedApi.RegisterCommand("bangumi")
@@ -67,7 +68,7 @@ namespace Command.Information
                     try
                     {
                         JObject resp = JObject.Parse(await _undefinedApi.Request.Get("https://xiaoapi.cn/API/zs_tf.php"));
-                        BangumiCollection? bc = resp.Value<BangumiCollection>("data");
+                        BangumiCollection? bc = resp["data"]?.ToObject<BangumiCollection>();
                         if (bc != null)
                         {
                             string outmsg = "";
@@ -89,9 +90,10 @@ namespace Command.Information
                             );
                         }
                     }
-                    catch
+                    catch(Exception ex)
                     {
-                        // ignored
+                        Console.WriteLine(ex.ToString());
+                        Console.WriteLine(ex.StackTrace);
                     }
                 });
             _undefinedApi.SubmitCommand();
@@ -105,9 +107,10 @@ namespace Command.Information
                     File.Delete(tPath);
                 }
             }
-            catch
+            catch(Exception ex)
             {
-                // ignored
+                Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex.StackTrace);
             }
         }
         private readonly Calendar _zhCnCalendar = new CultureInfo("zh-CN").DateTimeFormat.Calendar;
@@ -145,7 +148,7 @@ namespace Command.Information
 
     internal struct BangumiCollection
     {
-        [JsonProperty("bili")]public List<BangumiInfo>? Bili;
-        [JsonProperty("tx")]public List<BangumiInfo>? Tx;
+        [JsonProperty("bili")]public List<BangumiInfo> Bili;
+        [JsonProperty("tx")]public List<BangumiInfo> Tx;
     }
 }

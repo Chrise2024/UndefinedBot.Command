@@ -13,26 +13,37 @@ namespace Command.AnswerBook
                 .Alias(["ab", "answer"])
                 .Description("当你遇到问题时，不妨试试这本答案之书。")
                 .ShortDescription("答案之书")
-                .Usage("{0}answerbook")
-                .Example("{0}answerbook")
+                .Usage("{0}answerbook [你的问题]")
+                .Example("{0}answerbook 怎么办")
                 .Action(async (args) =>
                 {
-
-                    await _undefinedApi.Api.SendGroupMsg(
-                                    args.GroupId,
-                                    _undefinedApi.GetMessageBuilder()
-                                        .Reply(args.MsgId)
-                                        .Text(GetAnswer()).Build()
-                                );
+                    if (args.Param.Count > 0)
+                    {
+                        await _undefinedApi.Api.SendGroupMsg(
+                            args.GroupId,
+                            _undefinedApi.GetMessageBuilder()
+                                .Reply(args.MsgId)
+                                .Text(GetAnswer()).Build()
+                        );
+                    }
+                    else
+                    {
+                        await _undefinedApi.Api.SendGroupMsg(
+                            args.GroupId,
+                            _undefinedApi.GetMessageBuilder()
+                                .Reply(args.MsgId)
+                                .Text("你没有输入问题").Build()
+                        );
+                    }
                 });
             _undefinedApi.SubmitCommand();
         }
-        private static readonly Random s_randomRoot = new();
-        private static string GetAnswer()
+        private readonly Random _randomRoot = new();
+        private string GetAnswer()
         {
-            return s_answerList[s_randomRoot.Next(s_answerList.Count)];
+            return _answerList[_randomRoot.Next(_answerList.Count)];
         }
-        private static readonly List<string> s_answerList = [
+        private readonly List<string> _answerList = [
             "找个人给你意见",
             "算了吧",
             "请教你的妈妈",

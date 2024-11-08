@@ -58,9 +58,10 @@ namespace Command.Word
                             );
 
                     }
-                    catch
+                    catch(Exception ex)
                     {
-                        // ignored
+                        Console.WriteLine(ex.ToString());
+                        Console.WriteLine(ex.StackTrace);
                     }
                 });
             _undefinedApi.RegisterCommand("joke")
@@ -80,9 +81,10 @@ namespace Command.Word
                             );
 
                     }
-                    catch
+                    catch(Exception ex)
                     {
-                        // ignored
+                        Console.WriteLine(ex.ToString());
+                        Console.WriteLine(ex.StackTrace);
                     }
                 });
             _undefinedApi.RegisterCommand("tg")
@@ -102,9 +104,10 @@ namespace Command.Word
                             );
 
                     }
-                    catch
+                    catch(Exception ex)
                     {
-                        // ignored
+                        Console.WriteLine(ex.ToString());
+                        Console.WriteLine(ex.StackTrace);
                     }
                 });
             _undefinedApi.RegisterCommand("onset")
@@ -134,7 +137,7 @@ namespace Command.Word
                 .Description("生成一篇废话文章")
                 .ShortDescription("废话文学")
                 .Usage("{0}nosence [标题]")
-                .Example("{0}onset Homo")
+                .Example("{0}nosence Homo")
                 .Action(async (args) =>
                 {
                     if (args.Param.Count > 0)
@@ -143,6 +146,27 @@ namespace Command.Word
                             args.GroupId,
                             _undefinedApi.GetMessageBuilder()
                                 .Text(await _undefinedApi.Request.Get($"https://api.jkyai.top/API/gpbtwz/api.php?msg={args.Param[0]}&num={_randRoot.Next(150,450)}&type=text")).Build()
+                        );
+                    }
+                    else
+                    {
+                        _undefinedApi.Logger.Error("onset", "Improper Arg: Too Less args");
+                    }
+                });
+            _undefinedApi.RegisterCommand("lzcydn")
+                .Alias(["次元","二次元"])
+                .Description("自己变成二次元少女是什么样的")
+                .ShortDescription("来自次元的你")
+                .Usage("{0}lzcydn [Name]")
+                .Example("{0}lzcydn Homo")
+                .Action(async (args) =>
+                {
+                    if (args.Param.Count > 0)
+                    {
+                        await _undefinedApi.Api.SendGroupMsg(
+                            args.GroupId,
+                            _undefinedApi.GetMessageBuilder()
+                                .Text(await _undefinedApi.Request.Get($"https://api.jkyai.top/API/lzcydn/api.php?name={args.Param[0]}&type=text")).Build()
                         );
                     }
                     else

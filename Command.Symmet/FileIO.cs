@@ -34,9 +34,10 @@ namespace Command.Symmet
                     File.Delete(tPath);
                 }
             }
-            catch
+            catch(Exception ex)
             {
-                // ignored
+                Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex.StackTrace);
             }
         }
         public static void SafeDeletePath(string tPath)
@@ -48,9 +49,10 @@ namespace Command.Symmet
                     Directory.Delete(tPath);
                 }
             }
-            catch
+            catch(Exception ex)
             {
-                // ignored
+                Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex.StackTrace);
             }
         }
         public static string ReadFile(string tPath)
