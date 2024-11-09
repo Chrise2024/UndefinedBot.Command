@@ -27,7 +27,7 @@ namespace Command.Quote
                 {
                     if (args.Param.Count > 0)
                     {
-                        string imageCachePath = GenquoteImage(args.Param[0]);
+                        string imageCachePath = GenQuoteImage(args.Param[0]);
                         if (imageCachePath.Length == 0)
                         {
                             _undefinedApi.Logger.Error("quote","Generate Failed");
@@ -54,7 +54,7 @@ namespace Command.Quote
                 });
             _undefinedApi.SubmitCommand();
         }
-        private string GenquoteImage(string targetMsgIdString)
+        private string GenQuoteImage(string targetMsgIdString)
         {
             MsgBodySchematics targetMsg = _undefinedApi.Api.GetMsg(Int32.TryParse(targetMsgIdString, out int targetMsgId) ? targetMsgId : 0).Result;
             if ((targetMsg.MessageId ?? 0) == 0)
@@ -63,8 +63,24 @@ namespace Command.Quote
             }
             else
             {
+                long targetUin = targetMsg.Sender?.UserId ?? 0;
+                GroupMemberSchematics cMember = _undefinedApi.Api.GetGroupMember(targetMsg.GroupId ?? 0, targetUin).Result;
+                string qSplashPath = Path.Join(_undefinedApi.PluginPath, "QSplash.png");
+                string targetName = $"@{cMember.Nickname ?? ""}";
+                string imCacheName = $"MsgId{targetMsg.MessageId}Quote.png";
+                string qTextCacheName = $"MsgId{targetMsg.MessageId}Text.png";
+                string qnnCacheName = $"NickName{targetUin}Text.png";
                 string targetMsgString = "";
                 List<JObject> msgSeq = targetMsg.Message ?? [];
+                string imCachePath = _undefinedApi.Cache.GetFile(imCacheName);
+                if (imCachePath.Length != 0)
+                {
+                    return imCachePath;
+                }
+                else
+                {
+                    imCachePath = _undefinedApi.Cache.AddFile(imCacheName, imCacheName, 60 * 60 * 24);
+                }
                 foreach (JObject index in msgSeq)
                 {
                     if (index.Value<string>("type")?.Equals("text") ?? false)
@@ -85,25 +101,28 @@ namespace Command.Quote
                         targetMsgString += (TextRender.QFaceReference.GetValueOrDefault(fId, ""));
                     }
                 }
-                long targetUin = targetMsg.Sender?.UserId ?? 0;
-                GroupMemberSchematics cMember = _undefinedApi.Api.GetGroupMember(targetMsg.GroupId ?? 0, targetUin).Result;
-                string targetName = $"@{cMember.Nickname ?? ""}";
-                string imCachePath = Path.Join(_undefinedApi.CachePath, $"{DateTime.Now:HH-mm-ss}.png");
-                string qSplashPath = Path.Join(_undefinedApi.PluginPath, "QSplash.png");
-                string qTextCachePath = Path.Join(_undefinedApi.CachePath, $"Text-{DateTime.Now:HH-mm-ss}.png");
-                string qnnCachePath = Path.Join(_undefinedApi.CachePath, $"NickName-{DateTime.Now:HH-mm-ss}.png");
                 if (File.Exists(qSplashPath))
                 {
                     //min: 108 max: 252 mid: 165
                     //108-160-240
                     Image coverImage = Image.FromFile(qSplashPath);
-                    Image targetAvatar = GetQqAvatar(targetUin).Result;
+                    Image targetAvatar = GetQQAvatar(targetUin).Result;
                     Bitmap bg = new(1200, 640);
                     Graphics g = Graphics.FromImage(bg);
                     g.DrawImage(targetAvatar, 0, 0, 640, 640);
                     g.DrawImage(coverImage, 0, 0, 1200, 640);
-                    TextRender.GenTextImage(qTextCachePath, targetMsgString, 96, 1800, 1350);
-                    TextRender.GenTextImage(qnnCachePath, targetName, 72, 1500, 120);
+                    string qTextCachePath = _undefinedApi.Cache.GetFile(qTextCacheName);
+                    if (qTextCachePath.Length == 0)
+                    {
+                        qTextCachePath = _undefinedApi.Cache.AddFile(qTextCacheName, qTextCacheName, 60 * 60 * 24);
+                        TextRender.GenTextImage(qTextCachePath, targetMsgString, 96, 1800, 1350);
+                    }
+                    string qnnCachePath = _undefinedApi.Cache.GetFile(qnnCacheName);
+                    if (qnnCachePath.Length == 0)
+                    {
+                        qnnCachePath = _undefinedApi.Cache.AddFile(qnnCacheName, qnnCacheName, 60 * 60 * 24);
+                        TextRender.GenTextImage(qnnCachePath, targetName, 72, 1500, 120);
+                    }
                     Bitmap textBmp = new(qTextCachePath);
                     Bitmap nameBmp = new(qnnCachePath);
                     g.DrawImage(textBmp, 550, 95, 600, 450);
@@ -127,7 +146,7 @@ namespace Command.Quote
                 }
             }
         }
-        private async Task<Image> GetQqAvatar<T>(T targetUin)
+        private async Task<Image> GetQQAvatar<T>(T targetUin)
         {
             try
             {

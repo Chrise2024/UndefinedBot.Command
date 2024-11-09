@@ -203,4 +203,19 @@ namespace Command.Word
             }
         }
     }
+    internal struct HitokotoSchematics
+    {
+        [JsonProperty("id")] public int? Id;
+        [JsonProperty("uuid")] public string? Uuid;
+        [JsonProperty("hitokoto")] public string? Hitokoto;
+        [JsonProperty("type")] public string? Type;
+        [JsonProperty("from")] public string? From;
+        [JsonProperty("from_who")] public string? FromWho;
+        [JsonProperty("creator")] public string? Creator;
+        [JsonProperty("creator_uid")] public int? CreatorUid;
+        [JsonProperty("reviewer")] public int? Reviewer;
+        [JsonProperty("commit_from")] public string? CommitFrom;
+        [JsonProperty("created_at")] public string? CreatedAt;
+        [JsonProperty("length")] public int? Length;
+    }
 }
