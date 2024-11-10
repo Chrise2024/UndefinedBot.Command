@@ -17,27 +17,27 @@ namespace Command.Homo
                 .ShortDescription("恶臭数字论证")
                 .Usage("{0}homo [number]")
                 .Example(" {0}homo 10086")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
-                    if (args.Param.Count > 0)
+                    if (commandContext.Args.Param.Count > 0)
                     {
-                        string res = Homo.Homoize(args.Param[0], status: out bool status);
+                        string res = Homo.Homoize(commandContext.Args.Param[0], status: out bool status);
                         if (status)
                         {
 
-                            await _undefinedApi.Api.SendGroupMsg(
-                                                args.GroupId,
-                                                _undefinedApi.GetMessageBuilder()
-                                                    //.Reply(args.MsgId)
-                                                    .Text($"{args.Param[0]} = {res}").Build()
+                            await commandContext.Api.SendGroupMsg(
+                                                commandContext.Args.GroupId,
+                                                commandContext.GetMessageBuilder()
+                                                    //.Reply(commandContext.Args.MsgId)
+                                                    .Text($"{commandContext.Args.Param[0]} = {res}").Build()
                                             );
                         }
                         else
                         {
-                            await _undefinedApi.Api.SendGroupMsg(
-                                                args.GroupId,
-                                                _undefinedApi.GetMessageBuilder()
-                                                    //.Reply(args.MsgId)
+                            await commandContext.Api.SendGroupMsg(
+                                                commandContext.Args.GroupId,
+                                                commandContext.GetMessageBuilder()
+                                                    //.Reply(commandContext.Args.MsgId)
                                                     .Text($"{res}").Build()
                                             );
                         }

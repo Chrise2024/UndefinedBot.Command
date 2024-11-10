@@ -20,23 +20,23 @@ namespace Command.Template
                 .ShortDescription("混合Emoji")
                 .Usage("mix [Emoji1] [Emoji2]")
                 .Example("{0}mix 😀 😁")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
-                    string mixRes = MixEmoji(args.Param);
+                    string mixRes = MixEmoji(commandContext.Args.Param);
                     if (mixRes.Length > 0)
                     {
-                        await _undefinedApi.Api.SendGroupMsg(
-                                        args.GroupId,
-                                        _undefinedApi.GetMessageBuilder()
-                                            .Reply(args.MsgId)
+                        await commandContext.Api.SendGroupMsg(
+                                        commandContext.Args.GroupId,
+                                        commandContext.GetMessageBuilder()
+                                            .Reply(commandContext.Args.MsgId)
                                             .Image(mixRes, ImageSendType.Url).Build()
                                     );
                     }
                     else
                     {
-                        await _undefinedApi.Api.SendGroupMsg(
-                                args.GroupId,
-                                _undefinedApi.GetMessageBuilder()
+                        await commandContext.Api.SendGroupMsg(
+                                commandContext.Args.GroupId,
+                                commandContext.GetMessageBuilder()
                                     .Text("似乎不能混合").Build()
                             );
                     }

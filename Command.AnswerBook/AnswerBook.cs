@@ -15,23 +15,23 @@ namespace Command.AnswerBook
                 .ShortDescription("答案之书")
                 .Usage("{0}answerbook [你的问题]")
                 .Example("{0}answerbook 怎么办")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
-                    if (args.Param.Count > 0)
+                    if (commandContext.Args.Param.Count > 0)
                     {
-                        await _undefinedApi.Api.SendGroupMsg(
-                            args.GroupId,
-                            _undefinedApi.GetMessageBuilder()
-                                .Reply(args.MsgId)
+                        await commandContext.Api.SendGroupMsg(
+                            commandContext.Args.GroupId,
+                            commandContext.GetMessageBuilder()
+                                .Reply(commandContext.Args.MsgId)
                                 .Text(GetAnswer()).Build()
                         );
                     }
                     else
                     {
-                        await _undefinedApi.Api.SendGroupMsg(
-                            args.GroupId,
-                            _undefinedApi.GetMessageBuilder()
-                                .Reply(args.MsgId)
+                        await commandContext.Api.SendGroupMsg(
+                            commandContext.Args.GroupId,
+                            commandContext.GetMessageBuilder()
+                                .Reply(commandContext.Args.MsgId)
                                 .Text("你没有输入问题").Build()
                         );
                     }

@@ -10,10 +10,10 @@
         }
         public async Task Handle(ArgSchematics args)
         {
-            if (args.Command.Equals(CommandName) || CommandNameAlias.Contains(args.Command))
+            if (commandContext.Args.Command.Equals(CommandName) || CommandNameAlias.Contains(commandContext.Args.Command))
             {
                 _undefinedApi.Logger.Info("Command Triggered");
-                await Execute(args);
+                await Execute(commandContext);
                 _undefinedApi.Logger.Info("Command Completed");
             }
         }

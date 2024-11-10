@@ -20,15 +20,15 @@ namespace Command.Information
                 .ShortDescription("历史上的今天")
                 .Usage("{0}histoday")
                 .Example("{0}histoday")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
                     string imageCachePath = GenHistodayImage();
-                    await _undefinedApi.Api.SendGroupMsg(
-                                    args.GroupId,
-                                    _undefinedApi.GetMessageBuilder()
+                    await commandContext.Api.SendGroupMsg(
+                                    commandContext.Args.GroupId,
+                                    commandContext.GetMessageBuilder()
                                         .Image(imageCachePath, ImageSendType.LocalFile, ImageSubType.Normal).Build()
                                 );
-                    SafeDeleteFile(imageCachePath);
+                    //SafeDeleteFile(imageCachePath);
                 });
             _undefinedApi.RegisterCommand("moyu")
                 .Alias(["摸鱼","摸鱼日记"])
@@ -36,25 +36,26 @@ namespace Command.Information
                 .ShortDescription("摸鱼日记")
                 .Usage("{0}moyu")
                 .Example("{0}moyu")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
                     try
                     {
-                        JObject resp = JObject.Parse(await _undefinedApi.Request.Get("https://api.vvhan.com/api/moyu?type=json"));
+                        JObject resp = JObject.Parse(await commandContext.Request.Get("https://api.vvhan.com/api/moyu?type=json"));
                         string? imUrl = resp.Value<string>("url");
                         if (imUrl != null)
                         {
-                            await _undefinedApi.Api.SendGroupMsg(
-                                            args.GroupId,
-                                            _undefinedApi.GetMessageBuilder()
+                            await commandContext.Api.SendGroupMsg(
+                                            commandContext.Args.GroupId,
+                                            commandContext.GetMessageBuilder()
                                                 .Image(imUrl, ImageSendType.Url, ImageSubType.Normal).Build()
                                         );
                         }
                     }
                     catch(Exception ex)
                     {
-                        Console.WriteLine(ex.ToString());
-                        Console.WriteLine(ex.StackTrace);
+                        _undefinedApi.Logger.Error("Error Occured, Error Information:");
+                        _undefinedApi.Logger.Error(ex.Message);
+                        _undefinedApi.Logger.Error(ex.StackTrace ?? "");
                     }
                 });
             _undefinedApi.RegisterCommand("bangumi")
@@ -63,11 +64,11 @@ namespace Command.Information
                 .ShortDescription("今日新番")
                 .Usage("{0}bangumi")
                 .Example("{0}bangumi")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
                     try
                     {
-                        JObject resp = JObject.Parse(await _undefinedApi.Request.Get("https://xiaoapi.cn/API/zs_tf.php"));
+                        JObject resp = JObject.Parse(await commandContext.Request.Get("https://xiaoapi.cn/API/zs_tf.php"));
                         BangumiCollection? bc = resp["data"]?.ToObject<BangumiCollection>();
                         if (bc != null)
                         {
@@ -82,9 +83,9 @@ namespace Command.Information
                             {
                                 outmsg += ("----今日腾讯新番----\n" + nbtx);
                             }
-                            await _undefinedApi.Api.SendGroupMsg(
-                                args.GroupId,
-                                _undefinedApi.GetMessageBuilder()
+                            await commandContext.Api.SendGroupMsg(
+                                commandContext.Args.GroupId,
+                                commandContext.GetMessageBuilder()
                                     .Text(outmsg)
                                     .Build()
                             );
@@ -92,8 +93,9 @@ namespace Command.Information
                     }
                     catch(Exception ex)
                     {
-                        Console.WriteLine(ex.ToString());
-                        Console.WriteLine(ex.StackTrace);
+                        _undefinedApi.Logger.Error("Error Occured, Error Information:");
+                        _undefinedApi.Logger.Error(ex.Message);
+                        _undefinedApi.Logger.Error(ex.StackTrace ?? "");
                     }
                 });
             _undefinedApi.SubmitCommand();
@@ -129,7 +131,16 @@ namespace Command.Information
             g.Clear(Color.White);
             g.DrawString(currentTime, _dateFont, _drawBrush, new RectangleF(100, 100, 880, 200));
             g.DrawString(content, _contentFont, _drawBrush, new RectangleF(50, 400, 980, 1100));
-            string imCachePath = Path.Join(_undefinedApi.CachePath, $"{DateTime.Now:HH-mm-ss}.png");
+            string imCacheName = $"HD{DateTime.Now:yyyy-MM-dd}.png";
+            string imCachePath = _undefinedApi.Cache.GetFile(imCacheName);
+            if (imCachePath.Length != 0)
+            {
+                return imCachePath;
+            }
+            else
+            {
+                imCachePath = _undefinedApi.Cache.AddFile(imCacheName, imCacheName, 60 * 60 * 24);
+            }
             bg.Save(imCachePath);
             g.Dispose();
             bg.Dispose();

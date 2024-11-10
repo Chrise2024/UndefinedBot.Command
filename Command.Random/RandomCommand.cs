@@ -19,31 +19,31 @@ namespace Command.Random
                 .ShortDescription("随机图片")
                 .Usage("{0}random [PicType]")
                 .Example("{0}random acg")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
-                    if (args.Param.Count > 0)
+                    if (commandContext.Args.Param.Count > 0)
                     {
-                        string outUrl = GetRandomContent(args.Param[0]);
+                        string outUrl = GetRandomContent(commandContext.Args.Param[0]);
                         if (outUrl.Length > 0)
                         {
-                            await _undefinedApi.Api.SendGroupMsg(
-                                            args.GroupId,
-                                            _undefinedApi.GetMessageBuilder()
+                            await commandContext.Api.SendGroupMsg(
+                                            commandContext.Args.GroupId,
+                                            commandContext.GetMessageBuilder()
                                                 .Image(outUrl, ImageSendType.Url).Build()
                                         );
                         }
                         else
                         {
-                            await _undefinedApi.Api.SendGroupMsg(
-                                    args.GroupId,
-                                    _undefinedApi.GetMessageBuilder()
+                            await commandContext.Api.SendGroupMsg(
+                                    commandContext.Args.GroupId,
+                                    commandContext.GetMessageBuilder()
                                         .Text("呃啊，图片迷路了").Build()
                                 );
                         }
                     }
                     else
                     {
-                        _undefinedApi.Logger.Error("random","Improper Arg: Too Less args");
+                        _undefinedApi.Logger.Error("Improper Arg: Too Less args");
                     }
                 });
             _undefinedApi.SubmitCommand();

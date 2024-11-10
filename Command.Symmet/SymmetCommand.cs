@@ -19,36 +19,36 @@ namespace Command.Symmet
                 .ShortDescription("图片、表情对称")
                 .Usage("{0}symmet [对称方法] [表情/图片] Or 用 {0}symmet [对称方法] 回复[表情/图片]")
                 .Example("{0}symmet 上下 [图片]")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
-                    if (args.Param.Count > 1)
+                    if (commandContext.Args.Param.Count > 1)
                     {
                         string imageCachePath;
                         //ParamFormat: [Pattern] [ImageUrl]
-                        if (args.Param[1].StartsWith("http"))
+                        if (commandContext.Args.Param[1].StartsWith("http"))
                         {
-                            imageCachePath = _imageConverter.GetConvertedImage(args.Param[1], ImageContentType.Url, args.Param[0]);
+                            imageCachePath = _imageConverter.GetConvertedImage(commandContext.Args.Param[1], ImageContentType.Url, commandContext.Args.Param[0]);
                         }
                         //ParamFormat: [MsgId] [Pattern]
                         else
                         {
-                            imageCachePath = _imageConverter.GetConvertedImage(args.Param[0], ImageContentType.MsgId, args.Param[1]);
+                            imageCachePath = _imageConverter.GetConvertedImage(commandContext.Args.Param[0], ImageContentType.MsgId, commandContext.Args.Param[1]);
                         }
                         if (imageCachePath.Length == 0)
                         {
-                            _undefinedApi.Logger.Error("symmet", "Pic Convert Failed");
-                            await _undefinedApi.Api.SendGroupMsg(
-                                args.GroupId,
-                                _undefinedApi.GetMessageBuilder()
+                            _undefinedApi.Logger.Error("Pic Convert Failed");
+                            await commandContext.Api.SendGroupMsg(
+                                commandContext.Args.GroupId,
+                                commandContext.GetMessageBuilder()
                                     .Text("似乎转换不了").Build()
                             );
                         }
                         else
                         {
-                            await _undefinedApi.Api.SendGroupMsg(
-                                args.GroupId,
-                                _undefinedApi.GetMessageBuilder()
-                                    .Reply(args.MsgId)
+                            await commandContext.Api.SendGroupMsg(
+                                commandContext.Args.GroupId,
+                                commandContext.GetMessageBuilder()
+                                    .Reply(commandContext.Args.MsgId)
                                     .Image(imageCachePath, ImageSendType.LocalFile, ImageSubType.Normal).Build()
                             );
                             FileIo.SafeDeleteFile(imageCachePath);
@@ -56,7 +56,7 @@ namespace Command.Symmet
                     }
                     else
                     {
-                        _undefinedApi.Logger.Error("symmet","Improper Arg: Too Less args");
+                        _undefinedApi.Logger.Error("Improper Arg: Too Less args");
                     }
                 });
             _undefinedApi.SubmitCommand();

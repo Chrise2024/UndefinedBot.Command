@@ -23,33 +23,33 @@ namespace Command.Quote
                 .ShortDescription("生成切片（入典）")
                 .Usage("用{0}quote 回复想生成的消息")
                 .Example("{0}quote")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
-                    if (args.Param.Count > 0)
+                    if (commandContext.Args.Param.Count > 0)
                     {
-                        string imageCachePath = GenQuoteImage(args.Param[0]);
+                        string imageCachePath = GenQuoteImage(commandContext.Args.Param[0]);
                         if (imageCachePath.Length == 0)
                         {
-                            _undefinedApi.Logger.Error("quote","Generate Failed");
-                            await _undefinedApi.Api.SendGroupMsg(
-                                args.GroupId,
-                                _undefinedApi.GetMessageBuilder()
+                            _undefinedApi.Logger.Error("Generate Failed");
+                            await commandContext.Api.SendGroupMsg(
+                                commandContext.Args.GroupId,
+                                commandContext.GetMessageBuilder()
                                     .Text("生成出错了").Build()
                             );
                         }
                         else
                         {
-                            await _undefinedApi.Api.SendGroupMsg(
-                                    args.GroupId,
-                                    _undefinedApi.GetMessageBuilder()
+                            await commandContext.Api.SendGroupMsg(
+                                    commandContext.Args.GroupId,
+                                    commandContext.GetMessageBuilder()
                                         .Image(imageCachePath, ImageSendType.LocalFile, ImageSubType.Normal).Build()
                                 );
-                            FileIO.SafeDeleteFile(imageCachePath);
+                            //FileIO.SafeDeleteFile(imageCachePath);
                         }
                     }
                     else
                     {
-                        _undefinedApi.Logger.Error("quote", "Improper Arg: Too Less args");
+                        _undefinedApi.Logger.Error("Improper Arg: Too Less args");
                     }
                 });
             _undefinedApi.SubmitCommand();
@@ -136,8 +136,8 @@ namespace Command.Quote
                     bg.Dispose();
                     coverImage.Dispose();
                     targetAvatar.Dispose();
-                    FileIO.SafeDeleteFile(qnnCachePath);
-                    FileIO.SafeDeleteFile(qTextCachePath);
+                    //FileIO.SafeDeleteFile(qnnCachePath);
+                    //FileIO.SafeDeleteFile(qTextCachePath);
                     return imCachePath;
                 }
                 else
@@ -166,8 +166,8 @@ namespace Command.Quote
             catch (TaskCanceledException ex)
             {
                 Console.WriteLine("Task Canceled: ");
-                _undefinedApi.Logger.Error("Genquote",ex.Message);
-                _undefinedApi.Logger.Error("Genquote", ex.StackTrace ?? "");
+                _undefinedApi.Logger.Error(ex.Message);
+                _undefinedApi.Logger.Error(ex.StackTrace ?? "");
                 return new Bitmap(1, 1);
             }
             catch

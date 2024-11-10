@@ -20,23 +20,23 @@ namespace Command.Word
                 .ShortDescription("随机一言")
                 .Usage("{0}hito [一言类型]，不填类型则随机")
                 .Example("{0}hito b")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
-                    HitokotoSchematics hitokoto = await GetHitokoto(args.Param.Count == 0 ? "" : args.Param[0]);
+                    HitokotoSchematics hitokoto = await GetHitokoto(commandContext.Args.Param.Count == 0 ? "" : commandContext.Args.Param[0]);
                     if ((hitokoto.Id ?? 0) != 0)
                     {
-                        await _undefinedApi.Api.SendGroupMsg(
-                                args.GroupId,
-                                _undefinedApi.GetMessageBuilder()
+                        await commandContext.Api.SendGroupMsg(
+                                commandContext.Args.GroupId,
+                                commandContext.GetMessageBuilder()
                                     .Text($"{hitokoto.Hitokoto}\n---- {hitokoto.Creator}").Build()
                             );
                     }
                     else
                     {
-                        _undefinedApi.Logger.Error("hito",$"Get Hitokoto Failed");
-                        await _undefinedApi.Api.SendGroupMsg(
-                                args.GroupId,
-                                _undefinedApi.GetMessageBuilder()
+                        _undefinedApi.Logger.Error($"Get Hitokoto Failed");
+                        await commandContext.Api.SendGroupMsg(
+                                commandContext.Args.GroupId,
+                                commandContext.GetMessageBuilder()
                                     .Text("一言似乎迷路了").Build()
                             );
                     }
@@ -47,14 +47,14 @@ namespace Command.Word
                 .ShortDescription("随机情话")
                 .Usage("{0}lovetext")
                 .Example("{0}lovetext")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
                     try
                     {
-                        await _undefinedApi.Api.SendGroupMsg(
-                            args.GroupId,
-                            _undefinedApi.GetMessageBuilder()
-                                .Text(await _undefinedApi.Request.Get("https://api.vvhan.com/api/text/love")).Build()
+                        await commandContext.Api.SendGroupMsg(
+                            commandContext.Args.GroupId,
+                            commandContext.GetMessageBuilder()
+                                .Text(await commandContext.Request.Get("https://api.vvhan.com/api/text/love")).Build()
                         );
                     }
                     catch(Exception ex)
@@ -69,14 +69,14 @@ namespace Command.Word
                 .ShortDescription("随机笑话")
                 .Usage("{0}joke")
                 .Example("{0}joke")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
                     try
                     {
-                        await _undefinedApi.Api.SendGroupMsg(
-                            args.GroupId,
-                            _undefinedApi.GetMessageBuilder()
-                                .Text(await _undefinedApi.Request.Get("https://api.vvhan.com/api/text/joke")).Build()
+                        await commandContext.Api.SendGroupMsg(
+                            commandContext.Args.GroupId,
+                            commandContext.GetMessageBuilder()
+                                .Text(await commandContext.Request.Get("https://api.vvhan.com/api/text/joke")).Build()
                         );
 
                     }
@@ -92,14 +92,14 @@ namespace Command.Word
                 .ShortDescription("舔狗日记")
                 .Usage("{0}tg")
                 .Example("{0}tg")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
                     try
                     {
-                        await _undefinedApi.Api.SendGroupMsg(
-                            args.GroupId,
-                            _undefinedApi.GetMessageBuilder()
-                                .Text(await _undefinedApi.Request.Get("https://api.vvhan.com/api/text/dog")).Build()
+                        await commandContext.Api.SendGroupMsg(
+                            commandContext.Args.GroupId,
+                            commandContext.GetMessageBuilder()
+                                .Text(await commandContext.Request.Get("https://api.vvhan.com/api/text/dog")).Build()
                         );
 
                     }
@@ -115,20 +115,20 @@ namespace Command.Word
                 .ShortDescription("发病")
                 .Usage("{0}onset [发病对象]")
                 .Example("{0}onset 哈基米")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
-                    if (args.Param.Count > 0)
+                    if (commandContext.Args.Param.Count > 0)
                     {
-                        JObject resp = JObject.Parse(await _undefinedApi.Request.Get($"https://xiaobapi.top/api/xb/api/onset.php?name={args.Param[0]}"));
-                        await _undefinedApi.Api.SendGroupMsg(
-                            args.GroupId,
-                            _undefinedApi.GetMessageBuilder()
+                        JObject resp = JObject.Parse(await commandContext.Request.Get($"https://xiaobapi.top/api/xb/api/onset.php?name={commandContext.Args.Param[0]}"));
+                        await commandContext.Api.SendGroupMsg(
+                            commandContext.Args.GroupId,
+                            commandContext.GetMessageBuilder()
                                 .Text(resp.Value<string>("data") ?? "发病失败").Build()
                         );
                     }
                     else
                     {
-                        _undefinedApi.Logger.Error("onset", "Improper Arg: Too Less args");
+                        _undefinedApi.Logger.Error("Improper Arg: Too Less args");
                     }
                 });
             _undefinedApi.RegisterCommand("nosence")
@@ -137,19 +137,19 @@ namespace Command.Word
                 .ShortDescription("废话文学")
                 .Usage("{0}nosence [标题]")
                 .Example("{0}nosence Homo")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
-                    if (args.Param.Count > 0)
+                    if (commandContext.Args.Param.Count > 0)
                     {
-                        await _undefinedApi.Api.SendGroupMsg(
-                            args.GroupId,
-                            _undefinedApi.GetMessageBuilder()
-                                .Text(await _undefinedApi.Request.Get($"https://api.jkyai.top/API/gpbtwz/api.php?msg={args.Param[0]}&num={_randRoot.Next(150,450)}&type=text")).Build()
+                        await commandContext.Api.SendGroupMsg(
+                            commandContext.Args.GroupId,
+                            commandContext.GetMessageBuilder()
+                                .Text(await commandContext.Request.Get($"https://api.jkyai.top/API/gpbtwz/api.php?msg={commandContext.Args.Param[0]}&num={_randRoot.Next(150,450)}&type=text")).Build()
                         );
                     }
                     else
                     {
-                        _undefinedApi.Logger.Error("onset", "Improper Arg: Too Less args");
+                        _undefinedApi.Logger.Error("Improper Arg: Too Less args");
                     }
                 });
             _undefinedApi.RegisterCommand("lzcydn")
@@ -158,19 +158,19 @@ namespace Command.Word
                 .ShortDescription("来自次元的你")
                 .Usage("{0}lzcydn [Name]")
                 .Example("{0}lzcydn Homo")
-                .Action(async (args) =>
+                .Action(async (commandContext) =>
                 {
-                    if (args.Param.Count > 0)
+                    if (commandContext.Args.Param.Count > 0)
                     {
-                        await _undefinedApi.Api.SendGroupMsg(
-                            args.GroupId,
-                            _undefinedApi.GetMessageBuilder()
-                                .Text(await _undefinedApi.Request.Get($"https://api.jkyai.top/API/lzcydn/api.php?name={args.Param[0]}&type=text")).Build()
+                        await commandContext.Api.SendGroupMsg(
+                            commandContext.Args.GroupId,
+                            commandContext.GetMessageBuilder()
+                                .Text(await commandContext.Request.Get($"https://api.jkyai.top/API/lzcydn/api.php?name={commandContext.Args.Param[0]}&type=text")).Build()
                         );
                     }
                     else
                     {
-                        _undefinedApi.Logger.Error("onset", "Improper Arg: Too Less args");
+                        _undefinedApi.Logger.Error("Improper Arg: Too Less args");
                     }
                 });
             _undefinedApi.SubmitCommand();
@@ -193,8 +193,8 @@ namespace Command.Word
             catch (TaskCanceledException ex)
             {
                 Console.WriteLine("Task Canceled: ");
-                _undefinedApi.Logger.Error("hito", ex.Message);
-                _undefinedApi.Logger.Error("hito", ex.StackTrace ?? "");
+                _undefinedApi.Logger.Error(ex.Message);
+                _undefinedApi.Logger.Error(ex.StackTrace ?? "");
                 return new HitokotoSchematics();
             }
             catch
