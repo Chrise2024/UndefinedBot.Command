@@ -1,0 +1,6 @@
+﻿{
+  "name": "Word",
+  "description": "趣味内容",
+  "entry_point": "Base",
+  "entry_file": "Command.Word.dll"
+}

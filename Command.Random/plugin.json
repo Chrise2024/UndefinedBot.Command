@@ -1,0 +1,6 @@
+﻿{
+  "name": "Random Image",
+  "description": "随机图片",
+  "entry_file": "Command.Random.dll",
+  "entry_point": "RandomCommand"
+}
