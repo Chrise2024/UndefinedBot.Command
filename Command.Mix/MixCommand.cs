@@ -3,6 +3,7 @@ using UndefinedBot.Core.Utils;
 using UndefinedBot.Core.Command;
 using System.Globalization;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace Command.Template
 {
@@ -10,10 +11,12 @@ namespace Command.Template
     {
         private readonly UndefinedAPI _undefinedApi;
         private readonly string _pluginName;
+        private readonly Dictionary<string, Dictionary<string, string>> _mixMeta;
         public MixCommand(string pluginName)
         {
             _undefinedApi = new(pluginName);
             _pluginName = pluginName;
+            _mixMeta = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(File.ReadAllText(Path.Join(_undefinedApi.PluginPath,"data.json")) ?? throw new FileNotFoundException("data.json Not Exist")) ?? throw new NotImplementedException();
             _undefinedApi.RegisterCommand("mix")
                 .Alias(["mixemoji", "emojimix","混合"])
                 .Description("混合Emoji")
@@ -43,33 +46,34 @@ namespace Command.Template
                 });
             _undefinedApi.SubmitCommand();
         }
-        private int GetEmojiUnicodePoint(string emojiString)
+        private string GetEmojiUnicodePoint(string emojiString)
         {
             try
             {
                 if (emojiString.Length > 0)
                 {
                     StringRuneEnumerator stringRuneEnumerator = emojiString.EnumerateRunes();
+                    string tmp = "";
                     foreach (Rune r in stringRuneEnumerator)
                     {
-                        return r.Value;
+                        tmp += $"u{r.Value:x}-";
                     }
-                    return 0;
+                    return tmp.Length > 0 ? tmp[..^1] : "";
                 }
                 else
                 {
-                    return 0;
+                    return "";
                 }
             }
             catch
             {
-                return 0;
+                return "";
             }
         }
         private string MixEmoji(List<string> emojiStringArray)
         {
-            int e1Cp;
-            int e2Cp;
+            string e1Cp;
+            string e2Cp;
             if (emojiStringArray.Count == 1)
             {
                 List<string> lineElement = [];
@@ -78,10 +82,7 @@ namespace Command.Template
                 while (elementEnumerator.MoveNext())
                 {
                     string currentElement = elementEnumerator.GetTextElement();
-                    if (IsEmoji(currentElement))
-                    {
-                        lineElement.Add(currentElement);
-                    }
+                    lineElement.Add(currentElement);
                 }
                 if (lineElement.Count > 1)
                 {
@@ -103,6 +104,24 @@ namespace Command.Template
             {
                 return "";
             }
+            string? date = _mixMeta.GetValueOrDefault(e1Cp)?.GetValueOrDefault(e2Cp);
+            if (date != null)
+            {
+                return $"https://www.gstatic.com/android/keyboard/emojikitchen/{date}/{e1Cp}/{e1Cp}_{e2Cp}.png";
+            }
+            else
+            {
+                date = _mixMeta.GetValueOrDefault(e2Cp)?.GetValueOrDefault(e1Cp);
+                if (date != null)
+                {
+                    return $"https://www.gstatic.com/android/keyboard/emojikitchen/{date}/{e2Cp}/{e2Cp}_{e1Cp}.png";
+                }
+                else
+                {
+                    return "";
+                }
+            }
+            /*
             string urlN = $"https://www.gstatic.com/android/keyboard/emojikitchen/20201001/u{e1Cp:x}/u{e1Cp:x}_u{e2Cp:x}.png";
             string urlR = $"https://www.gstatic.com/android/keyboard/emojikitchen/20201001/u{e2Cp:x}/u{e2Cp:x}_u{e1Cp:x}.png";
             byte[] res = _undefinedApi.Request.GetBinary(urlN).Result;
@@ -122,6 +141,7 @@ namespace Command.Template
             {
                 return urlN;
             }
+            */
         }
         private bool IsEmoji(string textElement)
         {
