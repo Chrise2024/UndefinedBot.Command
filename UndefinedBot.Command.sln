@@ -22,7 +22,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Quote", "Command.Qu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Random", "Command.Random\Command.Random.csproj", "{0D5306BA-6A29-4B2D-B663-55CAB6A7CCC6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Raw", "Command.Raw\Command.Raw.csproj", "{BFAE8AE6-1696-49C3-8C1F-0D9B9EEB5252}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Waifu", "Command.Waifu\Command.Waifu.csproj", "{BFAE8AE6-1696-49C3-8C1F-0D9B9EEB5252}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Command.Symmet", "Command.Symmet\Command.Symmet.csproj", "{07FFCEB8-AD8C-488B-8C4A-9A618E238A5C}"
 EndProject

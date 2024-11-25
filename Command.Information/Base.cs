@@ -4,6 +4,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UndefinedBot.Core;
 using UndefinedBot.Core.Utils;
+using UndefinedBot.Core.Command;
+using UndefinedBot.Core.Command.Arguments.ArgumentType;
 
 namespace Command.Information
 {
@@ -103,6 +105,29 @@ namespace Command.Information
                         _undefinedApi.Logger.Error(ex.StackTrace ?? "");
                     }
                 });
+            _undefinedApi.RegisterCommand("raw")
+                .Description("{0}raw - 群u到底发的什么东西")
+                .ShortDescription("{0}raw - 原始消息")
+                .Usage("用{0}raw 回复想生成的消息")
+                .Example("{0}raw")
+                .Execute(async (ctx) =>
+                {
+                    await ctx.Api.SendGroupMsg(
+                        ctx.CallingProperties.GroupId,
+                        ctx.GetMessageBuilder()
+                            .Text("不知道这条消息在哪")
+                            .Build()
+                    );
+                }).Then(new VariableNode("target", new ReplyArgument())
+                    .Execute(async (ctx) =>
+                    {
+                        MsgBody targetMsg = await ctx.Api.GetMsg(ReplyArgument.GetQReply("target",ctx).MsgId);
+                        await ctx.Api.SendGroupMsg(
+                            ctx.CallingProperties.GroupId,
+                            ctx.GetMessageBuilder()
+                                .Text(JsonConvert.SerializeObject(targetMsg.Message, Formatting.Indented)).Build()
+                        );
+                    }));
             _undefinedApi.SubmitCommand();
         }
         private void SafeDeleteFile(string tPath)
