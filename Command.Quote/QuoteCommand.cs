@@ -3,6 +3,7 @@ using System.Drawing;
 using Newtonsoft.Json.Linq;
 using UndefinedBot.Core;
 using UndefinedBot.Core.Command;
+using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.NetWork;
 using UndefinedBot.Core.Utils;
 
@@ -18,53 +19,55 @@ namespace Command.Quote
             _undefinedApi = new(pluginName);
             _pluginName = pluginName;
             _undefinedApi.RegisterCommand("quote")
-                .Alias(["q","入典"])
+                .Alias(["q", "入典"])
                 .Description("正义史官 - 生成切片（入典）")
                 .ShortDescription("生成切片（入典）")
                 .Usage("用{0}quote 回复想生成的消息")
                 .Example("{0}quote")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
-                    if (commandContext.Args.Param.Count > 0)
+                    await ctx.Api.SendGroupMsg(
+                        ctx.CallingProperties.GroupId,
+                        ctx.GetMessageBuilder()
+                            .Text("不知道这条消息在哪")
+                            .Build()
+                    );
+                }).Then(new VariableNode("target", new ReplyArgument())
+                    .Execute(async (ctx) =>
                     {
-                        string imageCachePath = GenQuoteImage(commandContext.Args.Param[0]);
+                        string imageCachePath = GenQuoteImage(ReplyArgument.GetQReply("target",ctx).MsgId);
                         if (imageCachePath.Length == 0)
                         {
                             _undefinedApi.Logger.Error("Generate Failed");
-                            await commandContext.Api.SendGroupMsg(
-                                commandContext.Args.GroupId,
-                                commandContext.GetMessageBuilder()
+                            await ctx.Api.SendGroupMsg(
+                                ctx.CallingProperties.GroupId,
+                                ctx.GetMessageBuilder()
                                     .Text("生成出错了").Build()
                             );
                         }
                         else
                         {
-                            await commandContext.Api.SendGroupMsg(
-                                    commandContext.Args.GroupId,
-                                    commandContext.GetMessageBuilder()
-                                        .Image(imageCachePath, ImageSendType.LocalFile, ImageSubType.Normal).Build()
-                                );
+                            await ctx.Api.SendGroupMsg(
+                                ctx.CallingProperties.GroupId,
+                                ctx.GetMessageBuilder()
+                                    .Image(imageCachePath, ImageSendType.LocalFile, ImageSubType.Normal).Build()
+                            );
                             //FileIO.SafeDeleteFile(imageCachePath);
                         }
-                    }
-                    else
-                    {
-                        _undefinedApi.Logger.Error("Improper Arg: Too Less args");
-                    }
-                });
+                    }));
             _undefinedApi.SubmitCommand();
         }
-        private string GenQuoteImage(string targetMsgIdString)
+        private string GenQuoteImage(int targetMsgId)
         {
-            MsgBodySchematics targetMsg = _undefinedApi.Api.GetMsg(Int32.TryParse(targetMsgIdString, out int targetMsgId) ? targetMsgId : 0).Result;
-            if ((targetMsg.MessageId ?? 0) == 0)
+            MsgBody targetMsg = _undefinedApi.Api.GetMsg(targetMsgId).Result;
+            if (targetMsg.MessageId == 0)
             {
                 return "";
             }
             else
             {
-                long targetUin = targetMsg.Sender?.UserId ?? 0;
-                GroupMemberSchematics cMember = _undefinedApi.Api.GetGroupMember(targetMsg.GroupId ?? 0, targetUin).Result;
+                long targetUin = targetMsg.Sender.UserId;
+                GroupMember cMember = _undefinedApi.Api.GetGroupMember(targetMsg.GroupId, targetUin).Result;
                 string qSplashPath = Path.Join(_undefinedApi.PluginPath, "QSplash.png");
                 string targetName = $"@{cMember.Nickname ?? ""}";
                 string imCacheName = $"MsgId{targetMsg.MessageId}Quote.png";

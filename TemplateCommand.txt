@@ -6,14 +6,14 @@
         public List<string> CommandNameAlias { get; private set; } = alias;
         public async Task Execute(ArgSchematics args)
         {
-		    
+
         }
         public async Task Handle(ArgSchematics args)
         {
-            if (commandContext.Args.Command.Equals(CommandName) || CommandNameAlias.Contains(commandContext.Args.Command))
+            if (ctx.CallingProperties.Command.Equals(CommandName) || CommandNameAlias.Contains(ctx.CallingProperties.Command))
             {
                 _undefinedApi.Logger.Info("Command Triggered");
-                await Execute(commandContext);
+                await Execute(ctx);
                 _undefinedApi.Logger.Info("Command Completed");
             }
         }

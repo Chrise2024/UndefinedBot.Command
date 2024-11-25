@@ -4,6 +4,7 @@ using UndefinedBot.Core.Command;
 using System.Globalization;
 using System.Text;
 using Newtonsoft.Json;
+using UndefinedBot.Core.Command.Arguments.ArgumentType;
 
 namespace Command.Template
 {
@@ -18,32 +19,66 @@ namespace Command.Template
             _pluginName = pluginName;
             _mixMeta = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(File.ReadAllText(Path.Join(_undefinedApi.PluginPath,"data.json")) ?? throw new FileNotFoundException("data.json Not Exist")) ?? throw new NotImplementedException();
             _undefinedApi.RegisterCommand("mix")
-                .Alias(["mixemoji", "emojimix","混合"])
+                .Alias(["mixemoji", "emojimix", "混合"])
                 .Description("混合Emoji")
                 .ShortDescription("混合Emoji")
                 .Usage("mix [Emoji1] [Emoji2]")
                 .Example("{0}mix 😀 😁")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
-                    string mixRes = MixEmoji(commandContext.Args.Param);
-                    if (mixRes.Length > 0)
+                    await ctx.Api.SendGroupMsg(
+                        ctx.CallingProperties.GroupId,
+                        ctx.GetMessageBuilder()
+                            .Text("空气不能混合")
+                            .Build()
+                    );
+                }).Then(new VariableNode("emoji1", new StringArgument())
+                    .Execute(async (ctx) =>
                     {
-                        await commandContext.Api.SendGroupMsg(
-                                        commandContext.Args.GroupId,
-                                        commandContext.GetMessageBuilder()
-                                            .Reply(commandContext.Args.MsgId)
-                                            .Image(mixRes, ImageSendType.Url).Build()
-                                    );
-                    }
-                    else
-                    {
-                        await commandContext.Api.SendGroupMsg(
-                                commandContext.Args.GroupId,
-                                commandContext.GetMessageBuilder()
-                                    .Text("似乎不能混合").Build()
+                        string mixRes = MixEmoji([StringArgument.GetString("emoji1", ctx)]);
+                        if (mixRes.Length > 0)
+                        {
+                            await ctx.Api.SendGroupMsg(
+                                ctx.CallingProperties.GroupId,
+                                ctx.GetMessageBuilder()
+                                    .Reply(ctx.CallingProperties.MsgId)
+                                    .Image(mixRes, ImageSendType.Url)
+                                    .Build()
                             );
-                    }
-                });
+                        }
+                        else
+                        {
+                            await ctx.Api.SendGroupMsg(
+                                ctx.CallingProperties.GroupId,
+                                ctx.GetMessageBuilder()
+                                    .Text("似乎不能混合")
+                                    .Build()
+                            );
+                        }
+                    }).Then(new VariableNode("emoji2",new StringArgument())
+                        .Execute(async (ctx) =>
+                        {
+                            string mixRes = MixEmoji([StringArgument.GetString("emoji1", ctx),StringArgument.GetString("emoji2", ctx)]);
+                            if (mixRes.Length > 0)
+                            {
+                                await ctx.Api.SendGroupMsg(
+                                    ctx.CallingProperties.GroupId,
+                                    ctx.GetMessageBuilder()
+                                        .Reply(ctx.CallingProperties.MsgId)
+                                        .Image(mixRes, ImageSendType.Url)
+                                        .Build()
+                                );
+                            }
+                            else
+                            {
+                                await ctx.Api.SendGroupMsg(
+                                    ctx.CallingProperties.GroupId,
+                                    ctx.GetMessageBuilder()
+                                        .Text("似乎不能混合")
+                                        .Build()
+                                );
+                            }
+                        })));
             _undefinedApi.SubmitCommand();
         }
         private string GetEmojiUnicodePoint(string emojiString)
@@ -90,6 +125,12 @@ namespace Command.Template
                     e1Cp = GetEmojiUnicodePoint(lineElement[0]);
                     e2Cp = GetEmojiUnicodePoint(lineElement[1]);
                 }
+                else if (lineElement.Count == 1)
+                {
+
+                    e1Cp = GetEmojiUnicodePoint(lineElement[0]);
+                    e2Cp = GetEmojiUnicodePoint(lineElement[0]);
+                }
                 else
                 {
                     return "";
@@ -121,27 +162,6 @@ namespace Command.Template
                     return "";
                 }
             }
-            /*
-            string urlN = $"https://www.gstatic.com/android/keyboard/emojikitchen/20201001/u{e1Cp:x}/u{e1Cp:x}_u{e2Cp:x}.png";
-            string urlR = $"https://www.gstatic.com/android/keyboard/emojikitchen/20201001/u{e2Cp:x}/u{e2Cp:x}_u{e1Cp:x}.png";
-            byte[] res = _undefinedApi.Request.GetBinary(urlN).Result;
-            if (res.Length == 0 || res[0] != 0x89)
-            {
-                res = _undefinedApi.Request.GetBinary(urlR).Result;
-                if (res.Length == 0 || res[0] != 0x89)
-                {
-                    return "";
-                }
-                else
-                {
-                    return urlR;
-                }
-            }
-            else
-            {
-                return urlN;
-            }
-            */
         }
         private bool IsEmoji(string textElement)
         {

@@ -1,5 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using UndefinedBot.Core;
+using UndefinedBot.Core.Command;
+using UndefinedBot.Core.Command.Arguments.ArgumentType;
 
 namespace Command.Homo
 {
@@ -17,61 +19,67 @@ namespace Command.Homo
                 .ShortDescription("恶臭数字论证")
                 .Usage("{0}homo [number]")
                 .Example(" {0}homo 10086")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
-                    if (commandContext.Args.Param.Count > 0)
+                    await ctx.Api.SendGroupMsg(
+                        ctx.CallingProperties.GroupId,
+                        ctx.GetMessageBuilder()
+                            .Text("数呢")
+                            .Build()
+                    );
+                }).Then(new VariableNode("num", new StringArgument())
+                    .Execute(async (ctx) =>
                     {
-                        string res = Homo.Homoize(commandContext.Args.Param[0], status: out bool status);
+                        string input = StringArgument.GetString("num", ctx);
+                        (string res,bool status) = Homo.Homoize(input);
                         if (status)
                         {
 
-                            await commandContext.Api.SendGroupMsg(
-                                                commandContext.Args.GroupId,
-                                                commandContext.GetMessageBuilder()
-                                                    //.Reply(commandContext.Args.MsgId)
-                                                    .Text($"{commandContext.Args.Param[0]} = {res}").Build()
-                                            );
+                            await ctx.Api.SendGroupMsg(
+                                ctx.CallingProperties.GroupId,
+                                ctx.GetMessageBuilder()
+                                    //.Reply(ctx.CallingProperties.MsgId)
+                                    .Text($"{input} = {res}")
+                                    .Build()
+                            );
                         }
                         else
                         {
-                            await commandContext.Api.SendGroupMsg(
-                                                commandContext.Args.GroupId,
-                                                commandContext.GetMessageBuilder()
-                                                    //.Reply(commandContext.Args.MsgId)
-                                                    .Text($"{res}").Build()
-                                            );
+                            await ctx.Api.SendGroupMsg(
+                                ctx.CallingProperties.GroupId,
+                                ctx.GetMessageBuilder()
+                                    //.Reply(ctx.CallingProperties.MsgId)
+                                    .Text($"{res}")
+                                    .Build()
+                            );
                         }
-                    }
-                });
+                    }));
             _undefinedApi.SubmitCommand();
         }
     }
 
-    abstract internal class Homo
+    internal abstract class Homo
     {
-        public static string Homoize(string input, out bool status)
+        public static (string,bool) Homoize(string input)
         {
             if (Int64.TryParse(input, out long inputNumber))
             {
                 if (inputNumber == 114514)
                 {
-                    status = false;
-                    return "这么恶臭的数字无法再恶臭下去了";
+                    return ("这么恶臭的数字无法再恶臭下去了",false);
                 }
                 else
                 {
-                    status = true;
                     string tempResult = CalcHomo(inputNumber);
                     tempResult = Regex.Replace(tempResult, @"([\*|\/])\(([^\+\-\(\)]+)\)", match => $"{match.Groups[1].Value}{match.Groups[2].Value}");
                     tempResult = Regex.Replace(tempResult, @"([\+|\-])\(([^\(\)]+)\)([\+|\-|\)])", match => $"{match.Groups[1].Value}{match.Groups[2].Value}{match.Groups[3].Value}");
                     tempResult = Regex.Replace(tempResult, @"([\+|\-])\(([^\(\)]+)\)$", match => $"{match.Groups[1].Value}{match.Groups[2].Value}");
-                    return Regex.Replace(tempResult, @"\+-", "-");
+                    return (Regex.Replace(tempResult, @"\+-", "-"),true);
                 }
             }
             else
             {
-                status = false;
-                return "你肯定输入了一些奇怪的东西，爬爬";
+                return ("你肯定输入了一些奇怪的东西，爬爬",false);
             }
         }
         private static string CalcHomo(long inputNumber)

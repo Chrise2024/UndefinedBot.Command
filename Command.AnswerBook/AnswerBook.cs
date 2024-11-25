@@ -1,4 +1,7 @@
 ﻿using UndefinedBot.Core;
+using UndefinedBot.Core.Command;
+using UndefinedBot.Core.Command.Arguments.ArgumentType;
+
 namespace Command.AnswerBook
 {
     public class AnswerBookCommand
@@ -10,32 +13,31 @@ namespace Command.AnswerBook
             _undefinedApi = new(pluginName);
             _pluginName = pluginName;
             _undefinedApi.RegisterCommand("answerbook")
-                .Alias(["ab", "answer","答案之书"])
+                .Alias(["ab", "answer", "答案之书"])
                 .Description("当你遇到问题时，不妨试试这本答案之书。")
                 .ShortDescription("答案之书")
                 .Usage("{0}answerbook [你的问题]")
                 .Example("{0}answerbook 怎么办")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
-                    if (commandContext.Args.Param.Count > 0)
+                    await ctx.Api.SendGroupMsg(
+                        ctx.CallingProperties.GroupId,
+                        ctx.GetMessageBuilder()
+                            .Reply(ctx.CallingProperties.MsgId)
+                            .Text("你没有输入问题")
+                            .Build()
+                    );
+                }).Then(new VariableNode("question", new StringArgument())
+                    .Execute(async (ctx) =>
                     {
-                        await commandContext.Api.SendGroupMsg(
-                            commandContext.Args.GroupId,
-                            commandContext.GetMessageBuilder()
-                                .Reply(commandContext.Args.MsgId)
-                                .Text(GetAnswer()).Build()
+                        await ctx.Api.SendGroupMsg(
+                            ctx.CallingProperties.GroupId,
+                            ctx.GetMessageBuilder()
+                                .Reply(ctx.CallingProperties.MsgId)
+                                .Text(GetAnswer())
+                                .Build()
                         );
-                    }
-                    else
-                    {
-                        await commandContext.Api.SendGroupMsg(
-                            commandContext.Args.GroupId,
-                            commandContext.GetMessageBuilder()
-                                .Reply(commandContext.Args.MsgId)
-                                .Text("你没有输入问题").Build()
-                        );
-                    }
-                });
+                    }));
             _undefinedApi.SubmitCommand();
         }
         private readonly Random _randomRoot = new();

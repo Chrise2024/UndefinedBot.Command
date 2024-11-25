@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UndefinedBot.Core;
+using UndefinedBot.Core.Command;
+using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.NetWork;
 
 namespace Command.Word
@@ -15,53 +17,69 @@ namespace Command.Word
             _undefinedApi = new(pluginName);
             _pluginName = pluginName;
             _undefinedApi.RegisterCommand("hito")
-                .Alias(["hitokoto","一言","随机一言"])
-                .Description("随机一言\n类型对照：\na - 动画\nb - 漫画\nc - 游戏\nd - 文学\ne - 原创\nf - 来自网络\ng - 其他\nh - 影视\ni - 诗词\nj - 网易云\nk - 哲学\nl - 抖机灵")
+                .Alias(["hitokoto", "一言", "随机一言"])
+                .Description(
+                    "随机一言\n类型对照：\na - 动画\nb - 漫画\nc - 游戏\nd - 文学\ne - 原创\nf - 来自网络\ng - 其他\nh - 影视\ni - 诗词\nj - 网易云\nk - 哲学\nl - 抖机灵")
                 .ShortDescription("随机一言")
                 .Usage("{0}hito [一言类型]，不填类型则随机")
                 .Example("{0}hito b")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
-                    HitokotoSchematics hitokoto = await GetHitokoto(commandContext.Args.Param.Count == 0 ? "" : commandContext.Args.Param[0]);
+                    HitokotoSchematics hitokoto = await GetHitokoto();
                     if ((hitokoto.Id ?? 0) != 0)
                     {
-                        await commandContext.Api.SendGroupMsg(
-                                commandContext.Args.GroupId,
-                                commandContext.GetMessageBuilder()
-                                    .Text($"{hitokoto.Hitokoto}\n---- {hitokoto.Creator}").Build()
-                            );
+                        await ctx.Api.SendGroupMsg(
+                            ctx.CallingProperties.GroupId,
+                            ctx.GetMessageBuilder()
+                                .Text($"{hitokoto.Hitokoto}\n---- {hitokoto.Creator}").Build()
+                        );
                     }
                     else
                     {
                         _undefinedApi.Logger.Error($"Get Hitokoto Failed");
-                        await commandContext.Api.SendGroupMsg(
-                                commandContext.Args.GroupId,
-                                commandContext.GetMessageBuilder()
+                        await ctx.Api.SendGroupMsg(
+                            ctx.CallingProperties.GroupId,
+                            ctx.GetMessageBuilder()
+                                .Text("一言似乎迷路了").Build()
+                        );
+                    }
+                }).Then(new VariableNode("type", new StringArgument())
+                    .Execute(async (ctx) =>
+                    {
+                        HitokotoSchematics hitokoto = await GetHitokoto(StringArgument.GetString("type",ctx));
+                        if ((hitokoto.Id ?? 0) != 0)
+                        {
+                            await ctx.Api.SendGroupMsg(
+                                ctx.CallingProperties.GroupId,
+                                ctx.GetMessageBuilder()
+                                    .Text($"{hitokoto.Hitokoto}\n---- {hitokoto.Creator}").Build()
+                            );
+                        }
+                        else
+                        {
+                            _undefinedApi.Logger.Error($"Get Hitokoto Failed");
+                            await ctx.Api.SendGroupMsg(
+                                ctx.CallingProperties.GroupId,
+                                ctx.GetMessageBuilder()
                                     .Text("一言似乎迷路了").Build()
                             );
-                    }
-                });
+                        }
+                    }));
             _undefinedApi.RegisterCommand("lovetext")
                 .Alias(["情话", "来点情话"])
                 .Description("随机情话")
                 .ShortDescription("随机情话")
                 .Usage("{0}lovetext")
                 .Example("{0}lovetext")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
-                    try
-                    {
-                        await commandContext.Api.SendGroupMsg(
-                            commandContext.Args.GroupId,
-                            commandContext.GetMessageBuilder()
-                                .Text(await commandContext.Request.Get("https://api.vvhan.com/api/text/love")).Build()
-                        );
-                    }
-                    catch(Exception ex)
-                    {
-                        Console.WriteLine(ex.ToString());
-                        Console.WriteLine(ex.StackTrace);
-                    }
+                    string text = await ctx.Request.Get("https://api.vvhan.com/api/text/love");
+                    await ctx.Api.SendGroupMsg(
+                        ctx.CallingProperties.GroupId,
+                        ctx.GetMessageBuilder()
+                            .Text(text.Length == 0 ? "获取失败" : text)
+                            .Build()
+                    );
                 });
             _undefinedApi.RegisterCommand("joke")
                 .Alias(["笑话", "来点笑话"])
@@ -69,22 +87,15 @@ namespace Command.Word
                 .ShortDescription("随机笑话")
                 .Usage("{0}joke")
                 .Example("{0}joke")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
-                    try
-                    {
-                        await commandContext.Api.SendGroupMsg(
-                            commandContext.Args.GroupId,
-                            commandContext.GetMessageBuilder()
-                                .Text(await commandContext.Request.Get("https://api.vvhan.com/api/text/joke")).Build()
-                        );
-
-                    }
-                    catch(Exception ex)
-                    {
-                        Console.WriteLine(ex.ToString());
-                        Console.WriteLine(ex.StackTrace);
-                    }
+                    string text = await ctx.Request.Get("https://api.vvhan.com/api/text/joke");
+                    await ctx.Api.SendGroupMsg(
+                        ctx.CallingProperties.GroupId,
+                        ctx.GetMessageBuilder()
+                            .Text(text.Length == 0 ? "获取失败" : text)
+                            .Build()
+                    );
                 });
             _undefinedApi.RegisterCommand("tg")
                 .Alias(["舔狗", "舔狗日记"])
@@ -92,22 +103,15 @@ namespace Command.Word
                 .ShortDescription("舔狗日记")
                 .Usage("{0}tg")
                 .Example("{0}tg")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
-                    try
-                    {
-                        await commandContext.Api.SendGroupMsg(
-                            commandContext.Args.GroupId,
-                            commandContext.GetMessageBuilder()
-                                .Text(await commandContext.Request.Get("https://api.vvhan.com/api/text/dog")).Build()
-                        );
-
-                    }
-                    catch(Exception ex)
-                    {
-                        Console.WriteLine(ex.ToString());
-                        Console.WriteLine(ex.StackTrace);
-                    }
+                    string text = await ctx.Request.Get("https://api.vvhan.com/api/text/dog");
+                    await ctx.Api.SendGroupMsg(
+                        ctx.CallingProperties.GroupId,
+                        ctx.GetMessageBuilder()
+                            .Text(text.Length == 0 ? "获取失败" : text)
+                            .Build()
+                    );
                 });
             _undefinedApi.RegisterCommand("onset")
                 .Alias(["发病"])
@@ -115,64 +119,79 @@ namespace Command.Word
                 .ShortDescription("发病")
                 .Usage("{0}onset [发病对象]")
                 .Example("{0}onset 哈基米")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
-                    if (commandContext.Args.Param.Count > 0)
+                    await ctx.Api.SendGroupMsg(
+                        ctx.CallingProperties.GroupId,
+                        ctx.GetMessageBuilder()
+                            .Text("不能对奇怪的东西发病哦")
+                            .Build()
+                    );
+                }).Then(new VariableNode("target",new StringArgument())
+                    .Execute(async (ctx) =>
                     {
-                        JObject resp = JObject.Parse(await commandContext.Request.Get($"https://xiaobapi.top/api/xb/api/onset.php?name={commandContext.Args.Param[0]}"));
-                        await commandContext.Api.SendGroupMsg(
-                            commandContext.Args.GroupId,
-                            commandContext.GetMessageBuilder()
-                                .Text(resp.Value<string>("data") ?? "发病失败").Build()
-                        );
-                    }
-                    else
-                    {
-                        _undefinedApi.Logger.Error("Improper Arg: Too Less args");
-                    }
-                });
+                        string target = StringArgument.GetString("target", ctx);
+                        JObject resp = JObject.Parse(await ctx.Request.Get($"https://xiaobapi.top/api/xb/api/onset.php?name={target}"));
+                        await ctx.Api.SendGroupMsg(
+                            ctx.CallingProperties.GroupId,
+                            ctx.GetMessageBuilder()
+                                .Text(resp.Value<string>("data") ?? "发病失败")
+                                .Build()
+                            );
+                    }));
             _undefinedApi.RegisterCommand("nosence")
                 .Alias(["废话"])
                 .Description("生成一篇废话文章")
                 .ShortDescription("废话文学")
                 .Usage("{0}nosence [标题]")
                 .Example("{0}nosence Homo")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
-                    if (commandContext.Args.Param.Count > 0)
+                    await ctx.Api.SendGroupMsg(
+                        ctx.CallingProperties.GroupId,
+                        ctx.GetMessageBuilder()
+                            .Text("文章得有个主题")
+                            .Build()
+                    );
+                }).Then(new VariableNode("target",new StringArgument())
+                    .Execute(async (ctx) =>
                     {
-                        await commandContext.Api.SendGroupMsg(
-                            commandContext.Args.GroupId,
-                            commandContext.GetMessageBuilder()
-                                .Text(await commandContext.Request.Get($"https://api.jkyai.top/API/gpbtwz/api.php?msg={commandContext.Args.Param[0]}&num={_randRoot.Next(150,450)}&type=text")).Build()
+                        string target = StringArgument.GetString("target", ctx);
+                        string text = await ctx.Request.Get(
+                            $"https://api.jkyai.top/API/gpbtwz/api.php?msg={target}&num={_randRoot.Next(150, 450)}&type=text");
+                        await ctx.Api.SendGroupMsg(
+                            ctx.CallingProperties.GroupId,
+                            ctx.GetMessageBuilder()
+                                .Text(text.Length > 0 ? text : "生成失败")
+                                .Build()
                         );
-                    }
-                    else
-                    {
-                        _undefinedApi.Logger.Error("Improper Arg: Too Less args");
-                    }
-                });
+                    }));
             _undefinedApi.RegisterCommand("lzcydn")
                 .Alias(["次元","二次元"])
                 .Description("自己变成二次元少女是什么样的")
                 .ShortDescription("来自次元的你")
                 .Usage("{0}lzcydn [Name]")
                 .Example("{0}lzcydn Homo")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
-                    if (commandContext.Args.Param.Count > 0)
+                    await ctx.Api.SendGroupMsg(
+                        ctx.CallingProperties.GroupId,
+                        ctx.GetMessageBuilder()
+                            .Text("奇怪的东西可转生不了")
+                            .Build()
+                    );
+                }).Then(new VariableNode("target",new StringArgument())
+                    .Execute(async (ctx) =>
                     {
-                        await commandContext.Api.SendGroupMsg(
-                            commandContext.Args.GroupId,
-                            commandContext.GetMessageBuilder()
-                                .Text(await commandContext.Request.Get($"https://api.jkyai.top/API/lzcydn/api.php?name={commandContext.Args.Param[0]}&type=text")).Build()
+                        string target = StringArgument.GetString("target", ctx);
+                        string text = await ctx.Request.Get($"https://api.jkyai.top/API/lzcydn/api.php?name={target}&type=text");
+                        await ctx.Api.SendGroupMsg(
+                            ctx.CallingProperties.GroupId,
+                            ctx.GetMessageBuilder()
+                                .Text(text.Length > 0 ? text : "生成失败")
+                                .Build()
                         );
-                    }
-                    else
-                    {
-                        _undefinedApi.Logger.Error("Improper Arg: Too Less args");
-                    }
-                });
+                    }));
             _undefinedApi.SubmitCommand();
         }
         private async Task<HitokotoSchematics> GetHitokoto(string hitoType = "")

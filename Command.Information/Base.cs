@@ -20,35 +20,36 @@ namespace Command.Information
                 .ShortDescription("历史上的今天")
                 .Usage("{0}histoday")
                 .Example("{0}histoday")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
                     string imageCachePath = GenHistodayImage();
-                    await commandContext.Api.SendGroupMsg(
-                                    commandContext.Args.GroupId,
-                                    commandContext.GetMessageBuilder()
-                                        .Image(imageCachePath, ImageSendType.LocalFile, ImageSubType.Normal).Build()
-                                );
-                    //SafeDeleteFile(imageCachePath);
+                    await ctx.Api.SendGroupMsg(
+                        ctx.CallingProperties.GroupId,
+                        ctx.GetMessageBuilder()
+                            .Image(imageCachePath, ImageSendType.LocalFile, ImageSubType.Normal)
+                            .Build()
+                    );
                 });
             _undefinedApi.RegisterCommand("moyu")
-                .Alias(["摸鱼","摸鱼日记"])
+                .Alias(["摸鱼", "摸鱼日记"])
                 .Description("摸鱼日记 - 来快乐的摸鱼吧")
                 .ShortDescription("摸鱼日记")
                 .Usage("{0}moyu")
                 .Example("{0}moyu")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
                     try
                     {
-                        JObject resp = JObject.Parse(await commandContext.Request.Get("https://api.vvhan.com/api/moyu?type=json"));
+                        JObject resp = JObject.Parse(await ctx.Request.Get("https://api.vvhan.com/api/moyu?type=json"));
                         string? imUrl = resp.Value<string>("url");
                         if (imUrl != null)
                         {
-                            await commandContext.Api.SendGroupMsg(
-                                            commandContext.Args.GroupId,
-                                            commandContext.GetMessageBuilder()
-                                                .Image(imUrl, ImageSendType.Url, ImageSubType.Normal).Build()
-                                        );
+                            await ctx.Api.SendGroupMsg(
+                                ctx.CallingProperties.GroupId,
+                                ctx.GetMessageBuilder()
+                                    .Image(imUrl, ImageSendType.Url, ImageSubType.Normal)
+                                    .Build()
+                            );
                         }
                     }
                     catch(Exception ex)
@@ -59,39 +60,43 @@ namespace Command.Information
                     }
                 });
             _undefinedApi.RegisterCommand("bangumi")
-                .Alias(["今日新番","新番"])
+                .Alias(["今日新番", "新番"])
                 .Description("当日番剧动漫更新列表")
                 .ShortDescription("今日新番")
                 .Usage("{0}bangumi")
                 .Example("{0}bangumi")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
                     try
                     {
-                        JObject resp = JObject.Parse(await commandContext.Request.Get("https://xiaoapi.cn/API/zs_tf.php"));
+                        JObject resp = JObject.Parse(await ctx.Request.Get("https://xiaoapi.cn/API/zs_tf.php"));
                         BangumiCollection? bc = resp["data"]?.ToObject<BangumiCollection>();
                         if (bc != null)
                         {
                             string outmsg = "";
-                            string nbbili = (bc?.Bili ?? []).Aggregate("", (current, bi) => current + $"{bi.Time} [{bi.Title}] {bi.Updata}\n");
+                            string nbbili = (bc?.Bili ?? []).Aggregate("",
+                                (current, bi) => current + $"{bi.Time} [{bi.Title}] {bi.Updata}\n");
                             if (nbbili.Length > 0)
                             {
                                 outmsg += ("----今日B站新番----\n" + nbbili);
                             }
-                            string nbtx = (bc?.Tx ?? []).Aggregate("", (current, bi) => current + $"{bi.Time} [{bi.Title}] {bi.Updata}\n");
+
+                            string nbtx = (bc?.Tx ?? []).Aggregate("",
+                                (current, bi) => current + $"{bi.Time} [{bi.Title}] {bi.Updata}\n");
                             if (nbtx.Length > 0)
                             {
                                 outmsg += ("----今日腾讯新番----\n" + nbtx);
                             }
-                            await commandContext.Api.SendGroupMsg(
-                                commandContext.Args.GroupId,
-                                commandContext.GetMessageBuilder()
+
+                            await ctx.Api.SendGroupMsg(
+                                ctx.CallingProperties.GroupId,
+                                ctx.GetMessageBuilder()
                                     .Text(outmsg)
                                     .Build()
                             );
                         }
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         _undefinedApi.Logger.Error("Error Occured, Error Information:");
                         _undefinedApi.Logger.Error(ex.Message);

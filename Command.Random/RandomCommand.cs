@@ -1,6 +1,8 @@
 ﻿using UndefinedBot.Core;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using UndefinedBot.Core.Command;
+using UndefinedBot.Core.Command.Arguments.ArgumentType;
 using UndefinedBot.Core.Utils;
 
 namespace Command.Random
@@ -14,38 +16,39 @@ namespace Command.Random
             _undefinedApi = new(pluginName);
             _pluginName = pluginName;
             _undefinedApi.RegisterCommand("random")
-                .Alias(["rand","随机"])
+                .Alias(["rand", "随机"])
                 .Description("随机图片\n支持种类：\nacg - ACG\ndog - 哈基汪\ncat - 哈基米\nfox - 狐狸\nstar - 星空\nbg - 壁纸")
                 .ShortDescription("随机图片")
                 .Usage("{0}random [PicType]")
                 .Example("{0}random acg")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
-                    if (commandContext.Args.Param.Count > 0)
+                    await ctx.Api.SendGroupMsg(
+                        ctx.CallingProperties.GroupId,
+                        ctx.GetMessageBuilder()
+                            .Text("随机了个啥").Build()
+                    );
+                }).Then(new VariableNode("type", new StringArgument())
+                    .Execute(async (ctx) =>
                     {
-                        string outUrl = GetRandomContent(commandContext.Args.Param[0]);
+                        string outUrl = GetRandomContent(StringArgument.GetString("type", ctx));
                         if (outUrl.Length > 0)
                         {
-                            await commandContext.Api.SendGroupMsg(
-                                            commandContext.Args.GroupId,
-                                            commandContext.GetMessageBuilder()
-                                                .Image(outUrl, ImageSendType.Url).Build()
-                                        );
+                            await ctx.Api.SendGroupMsg(
+                                ctx.CallingProperties.GroupId,
+                                ctx.GetMessageBuilder()
+                                    .Image(outUrl, ImageSendType.Url).Build()
+                            );
                         }
                         else
                         {
-                            await commandContext.Api.SendGroupMsg(
-                                    commandContext.Args.GroupId,
-                                    commandContext.GetMessageBuilder()
-                                        .Text("呃啊，图片迷路了").Build()
-                                );
+                            await ctx.Api.SendGroupMsg(
+                                ctx.CallingProperties.GroupId,
+                                ctx.GetMessageBuilder()
+                                    .Text("呃啊，图片迷路了").Build()
+                            );
                         }
-                    }
-                    else
-                    {
-                        _undefinedApi.Logger.Error("Improper Arg: Too Less args");
-                    }
-                });
+                    }));
             _undefinedApi.SubmitCommand();
         }
         private readonly System.Random _randomRoot = new();

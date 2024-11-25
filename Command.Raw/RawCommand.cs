@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using UndefinedBot.Core;
 using UndefinedBot.Core.Command;
+using UndefinedBot.Core.Command.Arguments.ArgumentType;
 
 namespace Command.Raw
 {
@@ -17,22 +18,24 @@ namespace Command.Raw
                 .ShortDescription("{0}raw - 原始消息")
                 .Usage("用{0}raw 回复想生成的消息")
                 .Example("{0}raw")
-                .Action(async (commandContext) =>
+                .Execute(async (ctx) =>
                 {
-                    if (commandContext.Args.Param.Count > 0)
+                    await ctx.Api.SendGroupMsg(
+                        ctx.CallingProperties.GroupId,
+                        ctx.GetMessageBuilder()
+                            .Text("不知道这条消息在哪")
+                            .Build()
+                    );
+                }).Then(new VariableNode("target", new ReplyArgument())
+                    .Execute(async (ctx) =>
                     {
-                        MsgBodySchematics targetMsg = await commandContext.Api.GetMsg(commandContext.Args.Param[0]);
-                        await commandContext.Api.SendGroupMsg(
-                                        commandContext.Args.GroupId,
-                                        commandContext.GetMessageBuilder()
-                                            .Text(JsonConvert.SerializeObject(targetMsg.Message, Formatting.Indented)).Build()
-                                    );
-                    }
-                    else
-                    {
-                        _undefinedApi.Logger.Error($"Improper Arg: Too Less args, At Command <{commandContext.Args.Command}>");
-                    }
-                });
+                        MsgBody targetMsg = await ctx.Api.GetMsg(ReplyArgument.GetQReply("target",ctx).MsgId);
+                        await ctx.Api.SendGroupMsg(
+                            ctx.CallingProperties.GroupId,
+                            ctx.GetMessageBuilder()
+                                .Text(JsonConvert.SerializeObject(targetMsg.Message, Formatting.Indented)).Build()
+                        );
+                    }));
             _undefinedApi.SubmitCommand();
         }
     }

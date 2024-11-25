@@ -17,8 +17,8 @@ namespace Command.Symmet
         private readonly UndefinedAPI _imageApi = imageApi;
         public string GetConvertedImage(string imageContent, ImageContentType contentType, string convertMethod = "L")
         {
-            Image? im;
-            MemoryStream? ms;
+            Image im;
+            MemoryStream ms;
             if (contentType == ImageContentType.Url)
             {
                 byte[] imageBytes = _imageApi.Request.GetBinary(imageContent).Result;
@@ -27,8 +27,8 @@ namespace Command.Symmet
             }
             else
             {
-                MsgBodySchematics targetMsg = _imageApi.Api.GetMsg(imageContent).Result;
-                if ((targetMsg.MessageId ?? 0) == 0)
+                MsgBody targetMsg = _imageApi.Api.GetMsg(imageContent).Result;
+                if (targetMsg.MessageId == 0)
                 {
                     return "";
                 }
@@ -39,53 +39,37 @@ namespace Command.Symmet
                     im = Image.FromStream(ms);
                 }
             }
-            if (im != null)
+            if (im.RawFormat.Equals(ImageFormat.Gif))
             {
-                if (im.RawFormat.Equals(ImageFormat.Gif))
+                string imCachePath = Path.Join(_imageApi.CachePath, $"{DateTime.Now:HH-mm-ss}.gif");
+                MagickImageCollection resultImage = GifConvert.GifTransform(im, convertMethod);
+                if (resultImage.Count > 0)
                 {
-                    string imCachePath = Path.Join(_imageApi.CachePath, $"{DateTime.Now:HH-mm-ss}.gif");
-                    MagickImageCollection resultImage = GifConvert.GifTransform(im, convertMethod);
-                    if (resultImage.Count > 0)
-                    {
-                        resultImage.Write(imCachePath);
-                        resultImage.Dispose();
-                        im.Dispose();
-                        ms.Close();
-                        return imCachePath;
-                    }
-                    else
-                    {
-                        im.Dispose();
-                        ms.Close();
-                        return "";
-                    }
+                    resultImage.Write(imCachePath);
+                    resultImage.Dispose();
+                    im.Dispose();
+                    ms.Close();
+                    return imCachePath;
                 }
                 else
                 {
-                    string imCachePath = Path.Join(_imageApi.CachePath, $"{DateTime.Now:HH-mm-ss}.png");
-                    Bitmap resultImage = PicConvert.PicTransform(new Bitmap(im), convertMethod);
-                    if (resultImage != null)
-                    {
-                        resultImage.Save(imCachePath, ImageFormat.Gif);
-                        resultImage.Dispose();
-                        im.Dispose();
-                        ms.Close();
-                        return imCachePath;
-                    }
-                    else
-                    {
-                        im.Dispose();
-                        ms.Close();
-                        return "";
-                    }
+                    im.Dispose();
+                    ms.Close();
+                    return "";
                 }
             }
             else
             {
-                return "";
+                string imCachePath = Path.Join(_imageApi.CachePath, $"{DateTime.Now:HH-mm-ss}.png");
+                Bitmap resultImage = PicConvert.PicTransform(new Bitmap(im), convertMethod);
+                resultImage.Save(imCachePath, ImageFormat.Gif);
+                resultImage.Dispose();
+                im.Dispose();
+                ms.Close();
+                return imCachePath;
             }
         }
-        private string ExtractUrlFromMsg(MsgBodySchematics msgBody)
+        private string ExtractUrlFromMsg(MsgBody msgBody)
         {
             if (msgBody.Message?.Count > 0)
             {
@@ -116,7 +100,7 @@ namespace Command.Symmet
             return "";
         }
     }
-    abstract internal class ImageSymmetry
+    internal abstract class ImageSymmetry
     {
         public static Bitmap SymmetryL(Bitmap bmp)
         {
@@ -251,7 +235,7 @@ namespace Command.Symmet
             return bg;
         }
     }
-    abstract internal class PicConvert
+    internal abstract class PicConvert
     {
         public static Bitmap PicTransform(Bitmap picImage, string method)
         {
@@ -287,7 +271,7 @@ namespace Command.Symmet
             return transformMethod(picImage);
         }
     }
-    abstract internal class GifConvert
+    internal abstract class GifConvert
     {
 
         private static readonly byte[] s_defaultBytes = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0];
