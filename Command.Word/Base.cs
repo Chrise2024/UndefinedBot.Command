@@ -1,22 +1,19 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using UndefinedBot.Core;
-using UndefinedBot.Core.Command;
 using UndefinedBot.Core.Command.Arguments.ArgumentType;
-using UndefinedBot.Core.NetWork;
+using UndefinedBot.Core.Command.CommandNodes;
+using UndefinedBot.Core.Registry;
 
 namespace Command.Word
 {
-    public class Base
+    public class Base : IPluginInitializer
     {
-        private readonly UndefinedAPI _undefinedApi;
-        private readonly string _pluginName;
         private readonly Random _randRoot = new();
-        public Base(string pluginName)
+        public void Initialize(UndefinedApi undefinedApi)
         {
-            _undefinedApi = new(pluginName);
-            _pluginName = pluginName;
-            _undefinedApi.RegisterCommand("hito")
+            undefinedApi.RegisterCommand("hito")
                 .Alias(["hitokoto", "一言", "随机一言"])
                 .Description(
                     "随机一言\n类型对照：\na - 动画\nb - 漫画\nc - 游戏\nd - 文学\ne - 原创\nf - 来自网络\ng - 其他\nh - 影视\ni - 诗词\nj - 网易云\nk - 哲学\nl - 抖机灵")
@@ -25,8 +22,8 @@ namespace Command.Word
                 .Example("{0}hito b")
                 .Execute(async (ctx) =>
                 {
-                    HitokotoSchematics hitokoto = await GetHitokoto();
-                    if ((hitokoto.Id ?? 0) != 0)
+                    HitokotoSchematics hitokoto = await GetHitokoto(undefinedApi);
+                    if (hitokoto.Id != 0)
                     {
                         await ctx.Api.SendGroupMsg(
                             ctx.CallingProperties.GroupId,
@@ -36,7 +33,7 @@ namespace Command.Word
                     }
                     else
                     {
-                        _undefinedApi.Logger.Error($"Get Hitokoto Failed");
+                        undefinedApi.Logger.Error($"Get Hitokoto Failed");
                         await ctx.Api.SendGroupMsg(
                             ctx.CallingProperties.GroupId,
                             ctx.GetMessageBuilder()
@@ -46,8 +43,8 @@ namespace Command.Word
                 }).Then(new VariableNode("type", new StringArgument())
                     .Execute(async (ctx) =>
                     {
-                        HitokotoSchematics hitokoto = await GetHitokoto(StringArgument.GetString("type",ctx));
-                        if ((hitokoto.Id ?? 0) != 0)
+                        HitokotoSchematics hitokoto = await GetHitokoto(undefinedApi,StringArgument.GetString("type",ctx));
+                        if (hitokoto.Id != 0)
                         {
                             await ctx.Api.SendGroupMsg(
                                 ctx.CallingProperties.GroupId,
@@ -57,7 +54,7 @@ namespace Command.Word
                         }
                         else
                         {
-                            _undefinedApi.Logger.Error($"Get Hitokoto Failed");
+                            undefinedApi.Logger.Error($"Get Hitokoto Failed");
                             await ctx.Api.SendGroupMsg(
                                 ctx.CallingProperties.GroupId,
                                 ctx.GetMessageBuilder()
@@ -65,7 +62,7 @@ namespace Command.Word
                             );
                         }
                     }));
-            _undefinedApi.RegisterCommand("lovetext")
+            undefinedApi.RegisterCommand("lovetext")
                 .Alias(["情话", "来点情话"])
                 .Description("随机情话")
                 .ShortDescription("随机情话")
@@ -81,7 +78,7 @@ namespace Command.Word
                             .Build()
                     );
                 });
-            _undefinedApi.RegisterCommand("joke")
+            undefinedApi.RegisterCommand("joke")
                 .Alias(["笑话", "来点笑话"])
                 .Description("随机笑话")
                 .ShortDescription("随机笑话")
@@ -97,7 +94,7 @@ namespace Command.Word
                             .Build()
                     );
                 });
-            _undefinedApi.RegisterCommand("tg")
+            undefinedApi.RegisterCommand("tg")
                 .Alias(["舔狗", "舔狗日记"])
                 .Description("舔狗日记")
                 .ShortDescription("舔狗日记")
@@ -113,7 +110,7 @@ namespace Command.Word
                             .Build()
                     );
                 });
-            _undefinedApi.RegisterCommand("onset")
+            undefinedApi.RegisterCommand("onset")
                 .Alias(["发病"])
                 .Description("发病文案")
                 .ShortDescription("发病")
@@ -131,15 +128,15 @@ namespace Command.Word
                     .Execute(async (ctx) =>
                     {
                         string target = StringArgument.GetString("target", ctx);
-                        JObject resp = JObject.Parse(await ctx.Request.Get($"https://xiaobapi.top/api/xb/api/onset.php?name={target}"));
+                        JsonNode? resp = JsonNode.Parse(await ctx.Request.Get($"https://xiaobapi.top/api/xb/api/onset.php?name={target}"));
                         await ctx.Api.SendGroupMsg(
                             ctx.CallingProperties.GroupId,
                             ctx.GetMessageBuilder()
-                                .Text(resp.Value<string>("data") ?? "发病失败")
+                                .Text(resp?["data"]?.GetValue<string>() ?? "发病失败")
                                 .Build()
                             );
                     }));
-            _undefinedApi.RegisterCommand("nosence")
+            undefinedApi.RegisterCommand("nosence")
                 .Alias(["废话"])
                 .Description("生成一篇废话文章")
                 .ShortDescription("废话文学")
@@ -166,7 +163,7 @@ namespace Command.Word
                                 .Build()
                         );
                     }));
-            _undefinedApi.RegisterCommand("lzcydn")
+            undefinedApi.RegisterCommand("lzcydn")
                 .Alias(["次元","二次元"])
                 .Description("自己变成二次元少女是什么样的")
                 .ShortDescription("来自次元的你")
@@ -192,9 +189,9 @@ namespace Command.Word
                                 .Build()
                         );
                     }));
-            _undefinedApi.SubmitCommand();
+
         }
-        private async Task<HitokotoSchematics> GetHitokoto(string hitoType = "")
+        private async Task<HitokotoSchematics> GetHitokoto(UndefinedApi undefinedApi,string hitoType = "")
         {
             string para = "";
             foreach (char index in hitoType)
@@ -206,14 +203,14 @@ namespace Command.Word
             }
             try
             {
-                string response = await _undefinedApi.Request.Get("https://v1.hitokoto.cn/?" + para);
-                return JsonConvert.DeserializeObject<HitokotoSchematics>(response);
+                string response = await undefinedApi.Request.Get("https://v1.hitokoto.cn/?" + para);
+                return JsonSerializer.Deserialize<HitokotoSchematics>(response) ?? new();
             }
             catch (TaskCanceledException ex)
             {
                 Console.WriteLine("Task Canceled: ");
-                _undefinedApi.Logger.Error(ex.Message);
-                _undefinedApi.Logger.Error(ex.StackTrace ?? "");
+                undefinedApi.Logger.Error(ex.Message);
+                undefinedApi.Logger.Error(ex.StackTrace ?? "");
                 return new HitokotoSchematics();
             }
             catch
@@ -222,19 +219,19 @@ namespace Command.Word
             }
         }
     }
-    internal struct HitokotoSchematics
+    internal class HitokotoSchematics
     {
-        [JsonProperty("id")] public int? Id;
-        [JsonProperty("uuid")] public string? Uuid;
-        [JsonProperty("hitokoto")] public string? Hitokoto;
-        [JsonProperty("type")] public string? Type;
-        [JsonProperty("from")] public string? From;
-        [JsonProperty("from_who")] public string? FromWho;
-        [JsonProperty("creator")] public string? Creator;
-        [JsonProperty("creator_uid")] public int? CreatorUid;
-        [JsonProperty("reviewer")] public int? Reviewer;
-        [JsonProperty("commit_from")] public string? CommitFrom;
-        [JsonProperty("created_at")] public string? CreatedAt;
-        [JsonProperty("length")] public int? Length;
+        [JsonPropertyName("id")] public int Id { get; set; }
+        [JsonPropertyName("uuid")] public string Uuid { get; set; } = "";
+        [JsonPropertyName("hitokoto")] public string Hitokoto { get; set; } = "";
+        [JsonPropertyName("type")] public string Type { get; set; } = "";
+        [JsonPropertyName("from")] public string From { get; set; } = "";
+        [JsonPropertyName("from_who")] public string FromWho { get; set; } = "";
+        [JsonPropertyName("creator")] public string Creator { get; set; } = "";
+        [JsonPropertyName("creator_uid")] public int CreatorUid { get; set; }
+        [JsonPropertyName("reviewer")] public int Reviewer { get; set; }
+        [JsonPropertyName("commit_from")] public string CommitFrom { get; set; } = "";
+        [JsonPropertyName("created_at")] public string CreatedAt { get; set; } = "";
+        [JsonPropertyName("length")] public int Length { get; set; }
     }
 }

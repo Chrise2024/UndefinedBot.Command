@@ -1,6 +1,6 @@
 ﻿{
   "name": "Image Symmet",
   "description": "图片对称",
-  "entry_file": "Command.Symmet.dll",
+  "entry_file": "Command.Symmet",
   "entry_point": "SymmetCommand"
 }

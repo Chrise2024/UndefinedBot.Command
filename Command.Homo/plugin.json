@@ -1,6 +1,6 @@
 ﻿{
   "name": "Homo",
   "description": "恶臭数字论证",
-  "entry_file": "Command.Homo.dll",
+  "entry_file": "Command.Homo",
   "entry_point": "HomoCommand"
 }

@@ -1,7 +1,8 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using ImageMagick;
-using Newtonsoft.Json.Linq;
 using UndefinedBot.Core;
 using UndefinedBot.Core.Command;
 
@@ -12,9 +13,9 @@ namespace Command.Symmet
         Url = 0,
         MsgId = 1,
     }
-    internal class ImageConverter(UndefinedAPI imageApi)
+    internal class ImageConverter(UndefinedApi imageApi)
     {
-        private readonly UndefinedAPI _imageApi = imageApi;
+        private readonly UndefinedApi _imageApi = imageApi;
         public string GetConvertedImage(string imageContent, ImageContentType contentType, string convertMethod = "L")
         {
             Image im;
@@ -27,17 +28,15 @@ namespace Command.Symmet
             }
             else
             {
-                MsgBody targetMsg = _imageApi.Api.GetMsg(imageContent).Result;
-                if (targetMsg.MessageId == 0)
+                MsgBody? targetMsg = _imageApi.Api.GetMsg(imageContent).Result;
+                if (targetMsg == null || targetMsg.MessageId == 0)
                 {
                     return "";
                 }
-                else
-                {
-                    byte[] imageBytes = _imageApi.Request.GetBinary(ExtractUrlFromMsg(targetMsg)).Result;
-                    ms = new MemoryStream(imageBytes);
-                    im = Image.FromStream(ms);
-                }
+
+                byte[] imageBytes = _imageApi.Request.GetBinary(ExtractUrlFromMsg(targetMsg)).Result;
+                ms = new MemoryStream(imageBytes);
+                im = Image.FromStream(ms);
             }
             if (im.RawFormat.Equals(ImageFormat.Gif))
             {
@@ -71,33 +70,37 @@ namespace Command.Symmet
         }
         private string ExtractUrlFromMsg(MsgBody msgBody)
         {
-            if (msgBody.Message?.Count > 0)
+            if (!(msgBody.Message?.Count > 0))
             {
-                List<JObject> msgChain = msgBody.Message;
-                if (msgChain.Count > 0)
-                {
-                    JObject msg = msgChain[0];
-                    if (msg.Value<string>("type")?.Equals("image") ?? false)
-                    {
-                        if (msg.TryGetValue("data", out var jt))
-                        {
-                            JObject? dataObj = jt.ToObject<JObject>();
-                            if (dataObj != null)
-                            {
-                                if (dataObj.TryGetValue("url", out var temp))
-                                {
-                                    return temp.ToObject<string>() ?? "";
-                                }
-                                else
-                                {
-                                    return dataObj.Value<string>("file") ?? "";
-                                }
-                            }
-                        }
-                    }
-                }
+                return "";
             }
-            return "";
+
+            List<JsonNode> msgChain = msgBody.Message;
+            if (msgChain.Count <= 0)
+            {
+                return "";
+            }
+
+            JsonNode msg = msgChain[0];
+            if (!(msg["type"]?.GetValue<string>().Equals("image") ?? false))
+            {
+                return "";
+            }
+
+            JsonNode? jt = msg["data"];
+            if (jt == null)
+            {
+                return "";
+            }
+
+            JsonNode? dataObj = jt.Deserialize<JsonNode>();
+            if (dataObj == null)
+            {
+                return "";
+            }
+
+            JsonNode? temp  = dataObj["url"];
+            return temp != null ? temp.Deserialize<string>() ?? "" : dataObj["file"]?.GetValue<string>() ?? "";
         }
     }
     internal abstract class ImageSymmetry

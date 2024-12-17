@@ -1,6 +1,6 @@
 ﻿{
   "name": "EmojiMix",
   "description": "混合Emoji",
-  "entry_file": "Command.Mix.dll",
+  "entry_file": "Command.Mix",
   "entry_point": "MixCommand"
 }

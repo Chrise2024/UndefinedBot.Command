@@ -1,6 +1,6 @@
 {
   "name": "AnswerBook",
   "description": "答案之书",
-  "entry_file": "Command.AnswerBook.dll",
+  "entry_file": "Command.AnswerBook",
   "entry_point": "AnswerBookCommand"
 }

@@ -1,6 +1,6 @@
 ﻿{
   "name": "Waifu",
   "description": "娶群友",
-  "entry_file": "Command.Waifu.dll",
+  "entry_file": "Command.Waifu",
   "entry_point": "WaifuCommand"
 }

@@ -1,6 +1,6 @@
     public class Command(string pluginName, string commandName,List<string> alias) : IBaseCommand
     {
-        public UndefinedAPI _undefinedApi { get; private set; } = new(pluginName, commandName, alias);
+        public UndefinedApi undefinedApi { get; private set; } = new(pluginName, commandName, alias);
         public string PluginName { get; private set; } = pluginName;
         public string CommandName { get; private set; } = commandName;
         public List<string> CommandNameAlias { get; private set; } = alias;
@@ -12,14 +12,14 @@
         {
             if (ctx.CallingProperties.Command.Equals(CommandName) || CommandNameAlias.Contains(ctx.CallingProperties.Command))
             {
-                _undefinedApi.Logger.Info("Command Triggered");
+                undefinedApi.Logger.Info("Command Triggered");
                 await Execute(ctx);
-                _undefinedApi.Logger.Info("Command Completed");
+                undefinedApi.Logger.Info("Command Completed");
             }
         }
         public void Init()
         {
-            _undefinedApi.CommandEvent.OnCommand += Handle;
-            _undefinedApi.Logger.Info("Command Loaded");
+            undefinedApi.CommandEvent.OnCommand += Handle;
+            undefinedApi.Logger.Info("Command Loaded");
         }
     }
